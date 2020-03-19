@@ -2,9 +2,10 @@
   "name": "teamXSoftwareEngineeringProject",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "Main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "electron .",
+    "dev": "concurrently \"cd client\" \"npm run start\" \"wait-on http://localhost:3000\" \"cd ../\" \"npm run start\""
   },
   "repository": {
     "type": "git",
@@ -16,5 +17,12 @@
   "bugs": {
     "url": "https://github.com/12NaN/CSc322-TeamX-Software-Engineering-Project/issues"
   },
-  "homepage": "https://github.com/12NaN/CSc322-TeamX-Software-Engineering-Project#readme"
+  "homepage": "https://github.com/12NaN/CSc322-TeamX-Software-Engineering-Project#readme",
+  "devDependencies": {
+    "concurrently": "^5.1.0",
+    "electron": "^8.1.1"
+  },
+  "dependencies": {
+    "wait-on": "^4.0.1"
+  }
 }
