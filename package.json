@@ -23,6 +23,8 @@
     "electron": "^8.1.1"
   },
   "dependencies": {
+    "react-bootstrap": "^1.0.0",
+    "react-router-dom": "^5.1.2",
     "wait-on": "^4.0.1"
   }
 }
