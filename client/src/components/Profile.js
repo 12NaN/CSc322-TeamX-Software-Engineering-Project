@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import jwt_decode from 'jwt-decode'
+import userimg from './ProfileImages/user.jpg'
 
 class Profile extends Component {
   constructor() {
@@ -8,6 +9,7 @@ class Profile extends Component {
       first_name: '',
       last_name: '',
       email: '',
+      image: '',
       errors: {}
     }
   }
@@ -18,6 +20,7 @@ class Profile extends Component {
     this.setState({
       first_name: decoded.identity.first_name,
       last_name: decoded.identity.last_name,
+      image: decoded.identity.image_file,
       email: decoded.identity.email
     })
   }
@@ -30,6 +33,7 @@ class Profile extends Component {
             <h1 className="text-center">PROFILE</h1>
           </div>
           <table className="table col-md-6 mx-auto">
+            <img src ={userimg}/>
             <tbody>
               <tr>
                 <td>Fist Name</td>

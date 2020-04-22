@@ -7,7 +7,10 @@ class Register extends Component {
     this.state = {
       first_name: '',
       last_name: '',
+      user_name: '',
       email: '',
+      password: '',
+      reference: '',
       password: '',
       errors: {}
     }
@@ -25,8 +28,12 @@ class Register extends Component {
     const newUser = {
       first_name: this.state.first_name,
       last_name: this.state.last_name,
+      user_name: this.state.user_name,
       email: this.state.email,
-      password: this.state.password
+      password: this.state.password,
+      reference: this.state.reference,
+      interest: this.state.interest,
+      rating: 0
     }
 
     register(newUser).then(res => {
@@ -64,6 +71,17 @@ class Register extends Component {
                 />
               </div>
               <div className="form-group">
+                <label htmlFor="name">Username</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  name="user_name"
+                  placeholder="Enter your Username"
+                  value={this.state.user_name}
+                  onChange={this.onChange}
+                />
+              </div>
+              <div className="form-group">
                 <label htmlFor="email">Email address</label>
                 <input
                   type="email"
@@ -80,8 +98,30 @@ class Register extends Component {
                   type="password"
                   className="form-control"
                   name="password"
-                  placeholder="Password"
+                  placeholder="Enter password"
                   value={this.state.password}
+                  onChange={this.onChange}
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="interest">Interest</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  name="Interest"
+                  placeholder="Enter your Interest(s)"
+                  value={this.state.interest}
+                  onChange={this.onChange}
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="name">Reference</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  name="reference"
+                  placeholder="Enter your reference"
+                  value={this.state.reference}
                   onChange={this.onChange}
                 />
               </div>

@@ -63,6 +63,16 @@ class Landing extends Component {
                 Home
               </Link>
             </li>
+            <li className="nav-item">
+              <Link to="/users" className="nav-link">
+                Users
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link to="/projects" className="nav-link">
+                Projects
+              </Link>
+            </li>
           </ul>
           {localStorage.usertoken ? userLink : loginRegLink}
         </div>
