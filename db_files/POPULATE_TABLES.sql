@@ -5,8 +5,8 @@ VALUES
 ('user2','name2','lname2','email2','pass2'),
 ('user3','name3','lname3','email3','pass3'),
 ('user4','name4','lname4','email4','pass4'),
-('user5','name5','lname5','email5','pass5');
-
+('user5','name5','lname5','email5','pass5'),
+('user6','name6','lname6','email6','pass6');
 
 
 INSERT INTO 
@@ -15,7 +15,6 @@ VALUES
 (1,'group1'),
 (2,'group2'),
 (3,'group3');
-
 
 
 INSERT INTO
@@ -29,7 +28,7 @@ VALUES
 
 
 INSERT INTO 
-	BlackList(UserName, GroupID)
+	BlackBox(UserName, GroupID)
 VALUES
 ('user1',3),
 ('user2',3),
@@ -38,12 +37,17 @@ VALUES
 ('user5',3);
 
 
-
 INSERT INTO 
-	WhiteList(UserName, GroupID) 
+	WhiteBox(UserName, GroupID) 
 VALUES
 ('user1',1),
 ('user2',1),
 ('user3',1),
 ('user4',1),
 ('user5',1);
+
+
+INSERT INTO 
+	BlackList(UserName)
+VALUES 
+('user6')
