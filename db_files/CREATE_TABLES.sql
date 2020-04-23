@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS UserData(
     UserTypes INT UNSIGNED,
     NumPoints INT,
     PRIMARY KEY (UserName),
-    FOREIGN KEY (UserName) REFERENCES User(UserName) 
+    FOREIGN KEY (UserName) REFERENCES Users(UserName) 
     ON DELETE CASCADE,
     FOREIGN KEY (GroupID) REFERENCES Groups(GroupID)
     ON DELETE CASCADE
