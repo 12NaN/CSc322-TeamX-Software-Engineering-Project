@@ -1,5 +1,8 @@
+DROP TABLE TabooWords;
+DROP TABLE BlackBox;
+DROP TABLE WhiteBox;
 DROP TABLE BlackList;
-DROP TABLE WhiteList;
 DROP TABLE UserData;
+DROP TABLE Posts;
 DROP TABLE Groups;
 DROP TABLE Users;

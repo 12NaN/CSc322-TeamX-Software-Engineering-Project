@@ -17,6 +17,19 @@ VALUES
 (3,'group3');
 
 
+INSERT INTO 
+	Posts(PostID, GroupID, UserName, Content, TimeStamp)
+VALUES
+(1,1,'user1','This is post 1','2010-05-28T15:36:56.200');
+
+
+INSERT INTO 
+	TabooWords(Word)
+VALUES
+('word1'),
+('word2');
+	
+
 INSERT INTO
 	UserData(UserName, GroupID, UserTypes, NumPoints)
 VALUES
