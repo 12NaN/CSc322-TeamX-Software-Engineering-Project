@@ -1,13 +1,14 @@
 from flask import Flask, jsonify, request, json
 from flask_sqlalchemy import SQLAlchemy
-from flask_mysqldb import MySQL
 from datetime import datetime
 from flask_cors import CORS
+from flask_socketio import SocketIO, send
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 from flask_jwt_extended import (create_access_token)
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'mysecret'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
 
 db = SQLAlchemy(app)
@@ -69,13 +70,18 @@ class ResetPasswordForm(FlaskForm):
     submit = SubmitField('Reset Password')
 """
 app.config['JWT_SECRET_KEY'] = 'secret'
+socketIo = SocketIO(app, cors_allowed_origins="*")
 
 #mysql = MySQL(app)
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
 
 CORS(app)
-
+@socketIo.on("message")
+def handleMessage(msg):
+    print(msg)
+    send(msg, broadcast=True)
+    return None
 @app.route('/users/register', methods=['POST'])
 def register():
     print(request.get_json())
@@ -131,5 +137,7 @@ def login():
 @app.route("/profile")
 def account():
     image_file = url_for('static', filename = 'client/src/components/ProfileImages/user.jpg')
+
 if __name__ == '__main__':
-    app.run(debug=True)
+   # app.run(debug=True)
+    socketIo.run(app)
