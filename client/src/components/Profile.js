@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import jwt_decode from 'jwt-decode'
-import userimg from './ProfileImages/user.jpg'
+import userimg from './ProfileImages/user.png'
+
 
 class Profile extends Component {
   constructor() {
@@ -33,10 +34,10 @@ class Profile extends Component {
             <h1 className="text-center">PROFILE</h1>
           </div>
           <table className="table col-md-6 mx-auto">
-            <img src ={userimg}/>
+            <img src ={userimg} style={{height:"200px", width:"200px"}}/>
             <tbody>
               <tr>
-                <td>Fist Name</td>
+                <td>First Name</td>
                 <td>{this.state.first_name}</td>
               </tr>
               <tr>
@@ -46,6 +47,9 @@ class Profile extends Component {
               <tr>
                 <td>Email</td>
                 <td>{this.state.email}</td>
+              </tr>
+              <tr>
+                <td>Groups</td>
               </tr>
             </tbody>
           </table>

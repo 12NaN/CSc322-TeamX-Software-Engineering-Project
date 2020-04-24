@@ -45,3 +45,17 @@ export const getProfile = user => {
       console.log(err)
     })
 }
+
+export const getGroup = user =>{
+  return axios
+    .get('users/profile', {
+
+    })
+    .then(response => {
+      console.log(response)
+      return response.data
+    })
+    .catch(err => {
+      console.log(err)
+    })
+}
