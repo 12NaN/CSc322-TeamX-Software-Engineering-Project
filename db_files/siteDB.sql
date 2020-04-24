@@ -64,3 +64,29 @@ CREATE TABLE IF NOT EXISTS blacklist(
 
 
 
+
+--- POPULATE TABLES --
+INSERT INTO 
+	groups(group_id, group_name)
+VALUES
+(1,'Admin Group'),
+(2,'group2'),
+(3,'group3');
+
+
+INSERT INTO 
+	post(id, title, date_posted, content, user_id)
+VALUES
+(10001,"TITLE1",'2010-05-28T15:36:56.200', "CONTENT OF THE POST1", 1);
+	
+INSERT INTO
+	user_data(user_name, group_id, user_type, reputation, interests, "references")
+VALUES
+('friendssuperuser',1,4, 30, "Being an Admin", "self");
+
+
+INSERT INTO 
+	BlackBox(user_name, group_id)
+VALUES
+('friendssuperuser',1);
+
