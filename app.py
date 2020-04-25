@@ -14,26 +14,28 @@ db = SQLAlchemy(app)
 
 
 class BlackBox(db.Model):
-    user_name = db.Column(db.String(20), db.ForeignKey(
-        'user.user_name', ondelete="CASCADE"), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey(
+        'user.id', ondelete="CASCADE"), primary_key=True)
     group_id = db.Column(db.Integer, db.ForeignKey(
         'groups.group_id', ondelete="CASCADE"))
 
     def __repr__(self):
-        return f"BlackBox('{self.user_name}')"
+        return f"BlackBox('{self.user_id}')"
 
 
 class BlackList(db.Model):
+    user_id = db.Column(db.Integer, db.ForeignKey(
+        'user.id', ondelete="CASCADE"), primary_key=True)
     user_name = db.Column(db.String(20), db.ForeignKey(
-        'user.user_name'), primary_key=True)
+        'user.user_name'))
 
     def __repr__(self):
-        return f"BlackList('{self.user_name}')"
+        return f"BlackList('{self.user_id}')"
 
 
 class Groups(db.Model):
     group_id = db.Column(db.Integer, primary_key=True)
-    group_name = db.Column(db.String(20))
+    group_name = db.Column(db.String(20), nullable=False)
 
     def __repr__(self):
         return f"Groups('{self.group_id}')"
@@ -81,28 +83,14 @@ class User(db.Model):
         return f"User('{self.user_name}', '{self.email}', '{self.image_file}')"
 
 
-class UserData(db.Model):
-    user_name = db.Column(db.String(20), db.ForeignKey(
-        'user.user_name', ondelete="CASCADE"), primary_key=True)
-    group_id = db.Column(db.Integer, db.ForeignKey(
-        'groups.group_id', ondelete="CASCADE"))
-    user_type = db.Column(db.Integer, nullable=False)
-    reputation = db.Column(db.Integer, nullable=False)
-    interests = db.Column(db.String(120), nullable=False)
-    reference = db.Column(db.String(20), nullable=False)
-
-    def __repr__(self):
-        return f"User('{self.user_name}', '{self.group_id}', '{self.user_type}')"
-
-
 class WhiteBox(db.Model):
-    user_name = db.Column(db.String(20), db.ForeignKey(
-        'user.user_name', ondelete="CASCADE"), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey(
+        'user.id', ondelete="CASCADE"), primary_key=True)
     group_id = db.Column(db.Integer, db.ForeignKey(
         'groups.group_id', ondelete="CASCADE"))
 
     def __repr__(self):
-        return f"WhiteBox('{self.user_name}')"
+        return f"WhiteBox('{self.user_id}')"
 
 
 """
