@@ -16,26 +16,28 @@ db = SQLAlchemy(app)
 
 
 class BlackBox(db.Model):
-    user_name = db.Column(db.String(20), db.ForeignKey(
-        'user.user_name', ondelete="CASCADE"), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey(
+        'user.id', ondelete="CASCADE"), primary_key=True)
     group_id = db.Column(db.Integer, db.ForeignKey(
         'groups.group_id', ondelete="CASCADE"))
 
     def __repr__(self):
-        return f"BlackBox('{self.user_name}')"
+        return f"BlackBox('{self.user_id}')"
 
 
 class BlackList(db.Model):
+    user_id = db.Column(db.Integer, db.ForeignKey(
+        'user.id', ondelete="CASCADE"), primary_key=True)
     user_name = db.Column(db.String(20), db.ForeignKey(
-        'user.user_name'), primary_key=True)
+        'user.user_name'))
 
     def __repr__(self):
-        return f"BlackList('{self.user_name}')"
+        return f"BlackList('{self.user_id}')"
 
 
 class Groups(db.Model):
     group_id = db.Column(db.Integer, primary_key=True)
-    group_name = db.Column(db.String(20))
+    group_name = db.Column(db.String(20), nullable=False)
 
     def __repr__(self):
         return f"Groups('{self.group_id}')"
@@ -65,6 +67,10 @@ class User(db.Model):
                            default='client/src/components/ProfileImages/user.jpg')
     password = db.Column(db.String(60), nullable=False)
     posts = db.relationship('Post', backref='author', lazy=True)
+    user_type = db.Column(db.Integer, nullable=False)
+    reputation = db.Column(db.Integer, nullable=False)
+    group_id = db.Column(db.Integer, db.ForeignKey(
+        'groups.group_id', ondelete="CASCADE"))
 
     def get_reset_token(self, expires_sec=1800):
         s = Serializer(app.config['SECRET_KEY'], expires_sec)
@@ -83,28 +89,14 @@ class User(db.Model):
         return f"User('{self.user_name}', '{self.email}', '{self.image_file}')"
 
 
-class UserData(db.Model):
-    user_name = db.Column(db.String(20), db.ForeignKey(
-        'user.user_name', ondelete="CASCADE"), primary_key=True)
-    group_id = db.Column(db.Integer, db.ForeignKey(
-        'groups.group_id', ondelete="CASCADE"))
-    user_type = db.Column(db.Integer, nullable=False)
-    reputation = db.Column(db.Integer, nullable=False)
-    interests = db.Column(db.String(120), nullable=False)
-    reference = db.Column(db.String(20), nullable=False)
-
-    def __repr__(self):
-        return f"User('{self.user_name}', '{self.group_id}', '{self.user_type}')"
-
-
 class WhiteBox(db.Model):
-    user_name = db.Column(db.String(20), db.ForeignKey(
-        'user.user_name', ondelete="CASCADE"), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey(
+        'user.id', ondelete="CASCADE"), primary_key=True)
     group_id = db.Column(db.Integer, db.ForeignKey(
         'groups.group_id', ondelete="CASCADE"))
 
     def __repr__(self):
-        return f"WhiteBox('{self.user_name}')"
+        return f"WhiteBox('{self.user_id}')"
 
 
 """
@@ -153,10 +145,14 @@ def register():
         request.get_json()['password']).decode('utf-8')
     interest = 'cs'  # request.get_json()['interest']
     references = request.get_json()['references']
+    user_type = 0
+    reputation = 0
+    group_id = 0
+
   #  created = datetime.utcnow()
 
     user = User(user_name=user_name, first_name=first_name, last_name=last_name, email=email,
-                password=password, interest=interest, references=references)  # , created=created)
+                password=password, interest=interest, references=references, user_type=user_type, reputation=reputation, group_id=group_id)  # , created=created)
     db.session.add(user)
     db.session.commit()
 #    cur.execute("INSERT INTO users (first_name, last_name, email, password, created) VALUES ('" +
@@ -173,7 +169,11 @@ def register():
         'email': email,
         'password': password,
         'interest': interest,
-        'references': references
+        'references': references,
+        'user_type': user_type,
+        'reputation': reputation,
+        'group_id': group_id
+
     }
 
     return jsonify({'result': result})

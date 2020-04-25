@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS user_data(
 
 
 --- Users that are automatically accepted from their respective group.
-CREATE TABLE IF NOT EXISTS whiteBox(
+CREATE TABLE IF NOT EXISTS whitebox(
         user_name VARCHAR(20),
         group_id INTEGER UNSIGNED,
         FOREIGN KEY (group_id) REFERENCES groups(group_id)
@@ -80,9 +80,9 @@ VALUES
 (10001,"TITLE1",'2010-05-28T15:36:56.200', "CONTENT OF THE POST1", 1);
 	
 INSERT INTO
-	user_data(user_name, group_id, user_type, reputation, interests, "references")
+	user(id,user_name,first_name,last_name,email,interest,"references", image_file, password, user_type, reputation, group_id)
 VALUES
-('friendssuperuser',1,4, 30, "Being an Admin", "self");
+('1', 'admin', 'John', 'Doe', 'friends@somemail.com', 'cs', 'none', '', 'teamxfriends123', 4, 30, 0);
 
 
 INSERT INTO 
@@ -90,3 +90,7 @@ INSERT INTO
 VALUES
 ('friendssuperuser',1);
 
+INSERT INTO 
+	blacklist(user_name)
+VALUES
+('bryare');
