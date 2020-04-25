@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import Ratings from '../Ratings';
 import Sections from './Sections';
 import Poll from './Poll';
 import Members from './Members';
@@ -24,6 +25,7 @@ class Group extends Component {
             <div>
                 <img src={image} className="center" style={{height:"200px", width:"200px"}}/>
                 <h1 id="groupName">{this.state.name}</h1>
+                <Ratings/>
                 <hr></hr>
                 <Sections sectionName="Posts" component={<Posts/>}/>
                 <hr></hr>

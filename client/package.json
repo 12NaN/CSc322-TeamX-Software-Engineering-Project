@@ -4,6 +4,8 @@
   "private": true,
   "main": "public/Main.js",
   "dependencies": {
+    "@material-ui/core": "^4.9.11",
+    "@material-ui/lab": "^4.0.0-alpha.50",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
