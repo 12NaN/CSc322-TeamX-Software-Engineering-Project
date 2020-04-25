@@ -65,6 +65,10 @@ class User(db.Model):
                            default='client/src/components/ProfileImages/user.jpg')
     password = db.Column(db.String(60), nullable=False)
     posts = db.relationship('Post', backref='author', lazy=True)
+    user_type = db.Column(db.Integer, nullable=False)
+    reputation = db.Column(db.Integer, nullable=False)
+    group_id = db.Column(db.Integer, db.ForeignKey(
+        'groups.group_id', ondelete="CASCADE"))
 
     def get_reset_token(self, expires_sec=1800):
         s = Serializer(app.config['SECRET_KEY'], expires_sec)
@@ -134,10 +138,14 @@ def register():
         request.get_json()['password']).decode('utf-8')
     interest = 'cs'  # request.get_json()['interest']
     references = request.get_json()['references']
+    user_type = 0
+    reputation = 0
+    group_id = 0
+
   #  created = datetime.utcnow()
 
     user = User(user_name=user_name, first_name=first_name, last_name=last_name, email=email,
-                password=password, interest=interest, references=references)  # , created=created)
+                password=password, interest=interest, references=references, user_type=user_type, reputation=reputation, group_id=group_id)  # , created=created)
     db.session.add(user)
     db.session.commit()
 #    cur.execute("INSERT INTO users (first_name, last_name, email, password, created) VALUES ('" +
@@ -154,7 +162,11 @@ def register():
         'email': email,
         'password': password,
         'interest': interest,
-        'references': references
+        'references': references,
+        'user_type': user_type,
+        'reputation': reputation,
+        'group_id': group_id
+
     }
 
     return jsonify({'result': result})
