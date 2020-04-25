@@ -6,15 +6,29 @@ from flask_socketio import SocketIO, send
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 from flask_jwt_extended import (create_access_token)
+from pusher import Pusher
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+import json
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'mysecret'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
 
+pusher = Pusher(
+  app_id='989464',
+  key='5481efcb3669a7275fd2',
+  secret='ae4b5727ee6f310f7985',
+  cluster='us2',
+  ssl=True
+)
 db = SQLAlchemy(app)
 # In Python terminal "from app import db" then "db.create_all()"
-
-
+"""
+class History(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    message = db.Column(db.String(500))
+    def __repr__(self):
+        return f"History('{self.user_id}')"
+"""
 class BlackBox(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey(
         'user.id', ondelete="CASCADE"), primary_key=True)
@@ -98,40 +112,50 @@ class WhiteBox(db.Model):
     def __repr__(self):
         return f"WhiteBox('{self.user_id}')"
 
+class Results(db.Model):
+    __tablename__ = 'results'
+    id = db.Column('id', db.Integer, primary_key=True)
+    vote = db.Column('data', db.Integer)
 
-"""
-class RequestResetForm(FlaskForm):
-    email = StringField('Email',
-                        validators=[DataRequired(), Email()])
-    submit = SubmitField('Request Password Reset')
 
-    def validate_email(self, email):
-        user = User.query.filter_by(email = email.data).first()
-        if user is None:
-            raise ValidationError(
-                'There is no account with that email. You must register first.')
-
-class ResetPasswordForm(FlaskForm):
-    password = PasswordField('Password', validators=[DataRequired()])
-    confirm_password = PasswordField('Confirm Password', validators=[
-                                     DataRequired(), EqualTo('')])
-
-    submit = SubmitField('Reset Password')
-"""
 app.config['JWT_SECRET_KEY'] = 'secret'
 socketIo = SocketIO(app, cors_allowed_origins="*")
 
-# mysql = MySQL(app)
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
 
 CORS(app)
+@socketIo.on('vote')
+def handleVote(ballot):
+    vote = Results(vote=ballot)
+    db.session.add(vote)
+    db.session.commit()
 
+    mon = Results.query.filter_by(vote="Monday").count()
+    tue = Results.query.filter_by(vote="Tuesday").count()
+    wed = Results.query.filter_by(vote="Wednesday").count()
+    thur = Results.query.filter_by(vote="Thursday").count()
+    fri = Results.query.filter_by(vote="Friday").count()
+    sat = Results.query.filter_by(vote="Saturday").count()
+    sun = Results.query.filter_by(vote="Sunday").count()
+
+    emit('vote_results', {'Monday': mon, 'Tuesday': tue, 'Wednesday': wed, 'Thursday': thur, 'Friday':fri, 'Saturday':sat, 'Sunday':sun}, broadcast=True)
+"""
+@socketIo.on("connect")
+def chatHistory():
+    messages = History.query.all()
+    send(messages, broadcast=True)
+    return None
+"""
 @socketIo.on("message")
 def handleMessage(msg):
     print(msg)
+    #message = History(message=msg)
+    #db.session.add(message)
+    #db.session.commit()
     send(msg, broadcast=True)
     return None
+
 @app.route('/users/register', methods=['POST'])
 def register():
     print(request.get_json())
@@ -155,13 +179,7 @@ def register():
                 password=password, interest=interest, references=references, user_type=user_type, reputation=reputation, group_id=group_id)  # , created=created)
     db.session.add(user)
     db.session.commit()
-#    cur.execute("INSERT INTO users (first_name, last_name, email, password, created) VALUES ('" +
-#		str(first_name) + "', '" +
-#		str(last_name) + "', '" +
-#		str(email) + "', '" +
-#		str(password) + "', '" +
-#		str(created) + "')")
-#    mysql.connection.commit()
+
     result = {
         'user_name': user_name,
         'first_name': first_name,
@@ -196,7 +214,21 @@ def login():
 
     return result
 
+@app.route("/group/remove-todo/<item_id>")
+def removeTodo(item_id):
+    data = {'id': item_id }
+    pusher.trigger('todo', 'item-removed', data)
+    return jsonify(data)
 
+    # endpoint for updating todo item
+@app.route('/group/update-todo/<item_id>', methods = ['POST'])
+def updateTodo(item_id):
+    data = {
+        'id': item_id,
+        'completed': json.loads(request.data).get('completed', 0)
+    }
+    pusher.trigger('todo', 'item-updated', data)
+    return jsonify(data)
 @app.route("/profile")
 def account():
     image_file = url_for('static', filename = 'client/src/components/ProfileImages/user.jpg')

@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import Ratings from '../Ratings';
+import Tasks from './Tasks';
 import Sections from './Sections';
 import Poll from './Poll';
 import Members from './Members';
@@ -30,6 +31,8 @@ class Group extends Component {
                 <Sections sectionName="Posts" component={<Posts/>}/>
                 <hr></hr>
                 <Sections sectionName="Members" component={<Members members={this.state.members}/>}/>
+                <hr></hr>
+                <Sections sectionName="Tasks" component={<Tasks/>}/>
                 <hr></hr>
                 <Sections sectionName="Poll" component={<Poll/>}/>
                 <hr></hr>
