@@ -14,11 +14,11 @@ app.config['SECRET_KEY'] = 'mysecret'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
 
 pusher = Pusher(
-  app_id='989464',
-  key='5481efcb3669a7275fd2',
-  secret='ae4b5727ee6f310f7985',
-  cluster='us2',
-  ssl=True
+    app_id='989464',
+    key='5481efcb3669a7275fd2',
+    secret='ae4b5727ee6f310f7985',
+    cluster='us2',
+    ssl=True
 )
 db = SQLAlchemy(app)
 # In Python terminal "from app import db" then "db.create_all()"
@@ -29,6 +29,8 @@ class History(db.Model):
     def __repr__(self):
         return f"History('{self.user_id}')"
 """
+
+
 class BlackBox(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey(
         'user.id', ondelete="CASCADE"), primary_key=True)
@@ -82,7 +84,7 @@ class User(db.Model):
     password = db.Column(db.String(60), nullable=False)
     posts = db.relationship('Post', backref='author', lazy=True)
     user_type = db.Column(db.Integer, nullable=False)
-    reputation = db.Column(db.Integer, nullable=False)
+    rating = db.Column(db.Integer, nullable=False)
     group_id = db.Column(db.Integer, db.ForeignKey(
         'groups.group_id', ondelete="CASCADE"))
 
@@ -112,6 +114,7 @@ class WhiteBox(db.Model):
     def __repr__(self):
         return f"WhiteBox('{self.user_id}')"
 
+
 class Results(db.Model):
     __tablename__ = 'results'
     id = db.Column('id', db.Integer, primary_key=True)
@@ -139,7 +142,10 @@ def handleVote(ballot):
     sat = Results.query.filter_by(vote="Saturday").count()
     sun = Results.query.filter_by(vote="Sunday").count()
 
-    emit('vote_results', {'Monday': mon, 'Tuesday': tue, 'Wednesday': wed, 'Thursday': thur, 'Friday':fri, 'Saturday':sat, 'Sunday':sun}, broadcast=True)
+    emit('vote_results', {'Monday': mon, 'Tuesday': tue, 'Wednesday': wed,
+                          'Thursday': thur, 'Friday': fri, 'Saturday': sat, 'Sunday': sun}, broadcast=True)
+
+
 """
 @socketIo.on("connect")
 def chatHistory():
@@ -151,10 +157,11 @@ def chatHistory():
 def handleMessage(msg):
     print(msg)
     #message = History(message=msg)
-    #db.session.add(message)
-    #db.session.commit()
+    # db.session.add(message)
+    # db.session.commit()
     send(msg, broadcast=True)
     return None
+
 
 @app.route('/users/register', methods=['POST'])
 def register():
@@ -170,13 +177,13 @@ def register():
     interest = 'cs'  # request.get_json()['interest']
     references = request.get_json()['references']
     user_type = 0
-    reputation = 0
+    rating = 0
     group_id = 0
 
   #  created = datetime.utcnow()
 
     user = User(user_name=user_name, first_name=first_name, last_name=last_name, email=email,
-                password=password, interest=interest, references=references, user_type=user_type, reputation=reputation, group_id=group_id)  # , created=created)
+                password=password, interest=interest, references=references, user_type=user_type, rating=rating, group_id=group_id)  # , created=created)
     db.session.add(user)
     db.session.commit()
 
@@ -189,7 +196,7 @@ def register():
         'interest': interest,
         'references': references,
         'user_type': user_type,
-        'reputation': reputation,
+        'rating': rating,
         'group_id': group_id
 
     }
@@ -214,14 +221,17 @@ def login():
 
     return result
 
+
 @app.route("/group/remove-todo/<item_id>")
 def removeTodo(item_id):
-    data = {'id': item_id }
+    data = {'id': item_id}
     pusher.trigger('todo', 'item-removed', data)
     return jsonify(data)
 
     # endpoint for updating todo item
-@app.route('/group/update-todo/<item_id>', methods = ['POST'])
+
+
+@app.route('/group/update-todo/<item_id>', methods=['POST'])
 def updateTodo(item_id):
     data = {
         'id': item_id,
@@ -229,9 +239,13 @@ def updateTodo(item_id):
     }
     pusher.trigger('todo', 'item-updated', data)
     return jsonify(data)
+
+
 @app.route("/profile")
 def account():
-    image_file = url_for('static', filename = 'client/src/components/ProfileImages/user.jpg')
+    image_file = url_for(
+        'static', filename='client/src/components/ProfileImages/user.jpg')
+
 
 if __name__ == '__main__':
    # app.run(debug=True)
