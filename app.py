@@ -34,6 +34,8 @@ class History(db.Model):
 class BlackBox(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey(
         'user.id', ondelete="CASCADE"), primary_key=True)
+    blkbxd_prsn_id = db.Column(db.Integer, db.ForeignKey(
+        'user.id', ondelete="CASCADE"))
     group_id = db.Column(db.Integer, db.ForeignKey(
         'groups.group_id', ondelete="CASCADE"))
 
@@ -44,7 +46,7 @@ class BlackBox(db.Model):
 class BlackList(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey(
         'user.id', ondelete="CASCADE"), primary_key=True)
-    user_name = db.Column(db.String(20), db.ForeignKey(
+    user_name = db.Column(db.Integer, db.ForeignKey(
         'user.user_name'))
 
     def __repr__(self):
@@ -108,6 +110,8 @@ class User(db.Model):
 class WhiteBox(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey(
         'user.id', ondelete="CASCADE"), primary_key=True)
+    whtbxd_prsn_id = db.Column(db.Integer, db.ForeignKey(
+        'user.id', ondelete="CASCADE"))
     group_id = db.Column(db.Integer, db.ForeignKey(
         'groups.group_id', ondelete="CASCADE"))
 
@@ -247,6 +251,68 @@ def account():
         'static', filename='client/src/components/ProfileImages/user.jpg')
 
 
+"""
+# Deletes all rows from the following tables. BlackBox, BlackList, Groups, User, WhiteBox
+def drop_table_data():
+    db.session.query(BlackBox).delete()
+    db.session.query(BlackList).delete()
+    db.session.query(Groups).delete()
+    db.session.query(User).delete()
+    db.session.query(WhiteBox).delete()
+    db.session.commit()
+
+
+# Populates rows in the following tables.
+def populate_table_data():
+
+    # populate rows for user table.
+    admin = User(user_name='admin', first_name='John', last_name='Doe', email='admin@gmail.com',
+                 password='password', interest='cs', references='none', user_type=4, rating=30, group_id=0)
+    bryan = User(user_name='bryare', first_name='Bryan', last_name='Arevalo', email='bareval001@citymail.cuny.edu',
+                 password='bbb', interest='cs', references='John Doe', user_type=1, rating=0, group_id=1)
+    frank = User(user_name='franko', first_name='Frank', last_name='Orefice', email='frank@gmail.com',
+                 password='password', interest='cs', references='none', user_type=1, rating=0, group_id=1)
+    henry = User(user_name='henryp', first_name='Henry', last_name='Puma', email='henry@gmail.com',
+                 password='password', interest='cs', references='none', user_type=1, rating=0, group_id=1)
+    peter = User(user_name='petery', first_name='Peter', last_name='Ye', email='peter@gmail.com',
+                 password='password', interest='cs', references='none', user_type=1, rating=0, group_id=1)
+    blacklistUser = User(user_name='blacklistUser', first_name='black', last_name='list', email='blacklist@gmail.com',
+                         password='password', interest='cs', references='none', user_type=1, rating=0, group_id=2)
+
+    # populate rows for blackbox.
+    blackbox1 = BlackBox(
+        user_id=3, blkbxd_prsn_id=5, group_id=0)
+
+    # populate rows for blacklist.
+    blacklist1 = BlackList(
+        user_id=5, user_name='blacklistUser')
+
+    # populate rows for groups.
+    groups1 = Groups(
+        group_id=1, group_name='team x')
+
+    # populate rows for whitebox.
+    whitebox1 = WhiteBox(
+        user_id=1, whtbxd_prsn_id=5, group_id=0)
+
+    # add users and relations
+    db.session.add(admin)
+    db.session.add(bryan)
+    db.session.add(frank)
+    db.session.add(henry)
+    db.session.add(peter)
+    db.session.add(blacklistUser)
+    db.session.add(blackbox1)
+    db.session.add(blacklist1)
+    db.session.add(groups1)
+    db.session.add(whitebox1)
+
+    # commit additions
+    db.session.commit()
+"""
+
 if __name__ == '__main__':
-   # app.run(debug=True)
+    # app.run(debug=True)
+   # drop_table_data()
+   # populate_table_data()
     socketIo.run(app)
