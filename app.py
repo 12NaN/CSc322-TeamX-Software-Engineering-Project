@@ -252,8 +252,19 @@ def account():
 
 
 """
+# needs engine or connection to work
+# Deletes all of the following tables. BlackBox, BlackList, Groups, User, WhiteBox
+def drop_tables():
+    BlackBox.__table__.drop()
+    BlackList.__table__.drop()
+    Groups.__table__.drop()
+    User.__table__.drop()
+    WhiteBox.__table__.drop()
+"""
+
+"""
 # Deletes all rows from the following tables. BlackBox, BlackList, Groups, User, WhiteBox
-def drop_table_data():
+def delete_table_data():
     db.session.query(BlackBox).delete()
     db.session.query(BlackList).delete()
     db.session.query(Groups).delete()
@@ -262,22 +273,26 @@ def drop_table_data():
     db.session.commit()
 
 
+
 # Populates rows in the following tables.
 def populate_table_data():
 
     # populate rows for user table.
+    x = 'password'
+    passkey = bcrypt.generate_password_hash(x).decode('utf-8')
+
     admin = User(user_name='admin', first_name='John', last_name='Doe', email='admin@gmail.com',
-                 password='password', interest='cs', references='none', user_type=4, rating=30, group_id=0)
+                 password=passkey, interest='cs', references='none', user_type=4, rating=30, group_id=0)
     bryan = User(user_name='bryare', first_name='Bryan', last_name='Arevalo', email='bareval001@citymail.cuny.edu',
-                 password='bbb', interest='cs', references='John Doe', user_type=1, rating=0, group_id=1)
+                 password=passkey, interest='cs', references='John Doe', user_type=1, rating=0, group_id=1)
     frank = User(user_name='franko', first_name='Frank', last_name='Orefice', email='frank@gmail.com',
-                 password='password', interest='cs', references='none', user_type=1, rating=0, group_id=1)
+                 password=passkey, interest='cs', references='none', user_type=1, rating=0, group_id=1)
     henry = User(user_name='henryp', first_name='Henry', last_name='Puma', email='henry@gmail.com',
-                 password='password', interest='cs', references='none', user_type=1, rating=0, group_id=1)
+                 password=passkey, interest='cs', references='none', user_type=1, rating=0, group_id=1)
     peter = User(user_name='petery', first_name='Peter', last_name='Ye', email='peter@gmail.com',
-                 password='password', interest='cs', references='none', user_type=1, rating=0, group_id=1)
+                 password=passkey, interest='cs', references='none', user_type=1, rating=0, group_id=1)
     blacklistUser = User(user_name='blacklistUser', first_name='black', last_name='list', email='blacklist@gmail.com',
-                         password='password', interest='cs', references='none', user_type=1, rating=0, group_id=2)
+                         password=passkey, interest='cs', references='none', user_type=1, rating=0, group_id=2)
 
     # populate rows for blackbox.
     blackbox1 = BlackBox(
@@ -302,6 +317,7 @@ def populate_table_data():
     db.session.add(henry)
     db.session.add(peter)
     db.session.add(blacklistUser)
+
     db.session.add(blackbox1)
     db.session.add(blacklist1)
     db.session.add(groups1)
@@ -313,6 +329,8 @@ def populate_table_data():
 
 if __name__ == '__main__':
     # app.run(debug=True)
-   # drop_table_data()
-   # populate_table_data()
+
+    # delete_table_data()
+    # populate_table_data()
+
     socketIo.run(app)
