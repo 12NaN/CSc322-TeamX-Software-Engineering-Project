@@ -1,47 +1,39 @@
-import React, { useState, useEffect } from 'react';
-import io from "socket.io-client";
+import React from 'react';
+import { StreamApp, NotificationDropdown, FlatFeed, LikeButton, Activity, CommentList, CommentField, StatusUpdateForm } from 'react-activity-feed';
+import 'react-activity-feed/dist/index.css';
 
-let endPoint = "http://localhost:5000";
-let socket = io.connect(`${endPoint}`);
-
-function Posts() {
-    const [messages, setMessages] = useState(["Hello And Welcome"]);
-    const [message, setMessage] = useState("");
-  
-    useEffect(() =>{
-     getMessages();
-    }, [messages.length]);
-  
-    const getMessages = () =>{
-     socket.on("message", msg =>{
-      setMessages([...messages, msg]);
-     });
-    };
-  
-    const onChange = e => {
-     setMessage(e.target.value);
-    };
-    
-    const onClick = () => {
-     if(message !== ""){
-      socket.emit("message", message);
-      setMessage("");
-     }
-     else
-      alert("Please Add a Message");
-    };
+class Posts extends React.Component {
+  render () {
     return (
-      <div>
-        {messages.length > 0 && messages.map(msg =>(
-         <div>
-              <p>{msg}</p>
-             </div>
-        ))}
-        <input value= {message} name="message" onChange={e => onChange(e)}/>
-        <button onClick={() => onClick()}>Send Message</button>
-  
-      </div>
+      <StreamApp
+        apiKey="3mqcuj9e49f2"
+        appId="77254"
+        token="eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoidXNlci1vbmUifQ.cN-PQrIelL2a6PPnBxN3ZxpfBgMg9BYfrQMUYbFoTPo"
+      >
+        <NotificationDropdown notify />
+        <StatusUpdateForm
+          feedGroup="timeline"
+          userId="user-one" />
+        <FlatFeed
+          options={ {reactions: { recent: true } } }
+          notify
+          Activity={(props) =>
+              <Activity {...props}
+                Footer={() => (
+                  <div style={ {padding: '8px 16px'} }>
+                    <LikeButton {...props} />
+                    <CommentField
+                      activity={props.activity}
+                      onAddReaction={props.onAddReaction} />
+                    <CommentList activityId={props.activity.id} />
+                  </div>
+                )}
+              />
+            }
+          />
+      </StreamApp>
     );
   }
+}
 
 export default Posts;
