@@ -1,5 +1,8 @@
 import React, { Component } from 'react'
 import { Link, withRouter } from 'react-router-dom'
+import LOGO1 from './ProfileImages/LOGO1.png'
+import LOGO2 from './ProfileImages/LOGO2.png'
+
 
 class Landing extends Component {
   logOut(e) {
@@ -52,6 +55,7 @@ class Landing extends Component {
         >
           <span className="navbar-toggler-icon" />
         </button>
+        <img src={LOGO1} />
 
         <div
           className="collapse navbar-collapse justify-content-md-center"
@@ -76,6 +80,7 @@ class Landing extends Component {
           </ul>
           {localStorage.usertoken ? userLink : loginRegLink}
         </div>
+        <img src={LOGO2} style={{ height: "50px", width: "100px" }} />
       </nav>
     )
   }

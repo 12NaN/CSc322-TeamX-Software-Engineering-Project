@@ -34,7 +34,7 @@ class Profile extends Component {
             <h1 className="text-center">PROFILE</h1>
           </div>
           <table className="table col-md-6 mx-auto">
-            <img src ={userimg} style={{height:"200px", width:"200px"}}/>
+            <img src={userimg} style={{ height: "200px", width: "200px" }} />
             <tbody>
               <tr>
                 <td>First Name</td>
