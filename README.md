@@ -5,15 +5,15 @@ A collaborative project for the Active Teaming System (AcTS) presented by Team X
 
  **This system will facilitate active teaming of people with similar interest and skill-set to forge groups for a certain do-good project.**
 
-## About
+# About
 
 This project, named 'Friends' is built in compliance with Project Requirements Specification provided by Professor Jie Wei. 
     
-### Contributors
+# Contributors
 
  **Team X:** Bryan Arevalo, Henry Puma, Frank Orefice, Peter Ye
 
-#### Useful Links
+# Useful Links
 
 [Project Requirements](http://www-cs.ccny.cuny.edu/~csjie/322/s20/spec_s20.docx)
 
