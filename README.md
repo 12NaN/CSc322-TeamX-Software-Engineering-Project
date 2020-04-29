@@ -1,4 +1,6 @@
 
+[![Build status](https://travis-ci.org/USERNAME/travis-lab.svg?master)](https://travis-ci.org/BryAre)
+
 A collaborative project for the Active Teaming System (AcTS) presented by Team X for CSC322 - Software Engineering, taught by Professor Jie Wei.
 
 # About
@@ -8,7 +10,7 @@ This project, named 'Friends' is built in compliance with Project Requirements S
 
 # Purpose 
 
- **This system will facilitate active teaming of people with similar interest and skill-set to forge groups for a certain do-good project.**
+**This system will facilitate active teaming of people with similar interest and skill-set to forge groups for a certain do-good project.**
     
 # Contributors
 
