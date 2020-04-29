@@ -1,0 +1,1 @@
+A collaborative project named 'Friends' presented by Team X for CSC322 - Software Engineering, taught by Professor Jie Wei.
