@@ -1,14 +1,14 @@
 
 A collaborative project for the Active Teaming System (AcTS) presented by Team X for CSC322 - Software Engineering, taught by Professor Jie Wei.
 
-# Purpose 
-
- **This system will facilitate active teaming of people with similar interest and skill-set to forge groups for a certain do-good project.**
-
 # About
 
 This project, named 'Friends' is built in compliance with Project Requirements Specification provided by Professor Jie Wei. 
 'Friends' is built using several multiple tools including: JavaScript, HTML5, CSS, Electron, Python, SQLITE, and an extensive library of packages installed using Node Package Manager (NPM).
+
+# Purpose 
+
+ **This system will facilitate active teaming of people with similar interest and skill-set to forge groups for a certain do-good project.**
     
 # Contributors
 
