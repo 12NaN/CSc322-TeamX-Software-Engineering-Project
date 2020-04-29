@@ -8,10 +8,27 @@ A collaborative project for the Active Teaming System (AcTS) presented by Team X
 # About
 
 This project, named 'Friends' is built in compliance with Project Requirements Specification provided by Professor Jie Wei. 
+'Friends' is built using several multiple tools including: JavaScript, HTML5, CSS, Electron, Python, SQLITE, and an extensive library of packages installed using Node Package Manager (NPM).
     
 # Contributors
 
  **Team X:** Bryan Arevalo, Henry Puma, Frank Orefice, Peter Ye
+
+# Instructions 
+Electron Setup:
+1) git clone https://github.com/12NaN/CSc322-TeamX-Software-Engineering-Project.git
+2) cd CSc322-TeamX-Software-Engineering-Project
+3) npm i 
+4) cd Client 
+5) npm i 
+6) npm run start
+
+DB in Python:
+1) Open Python3
+2) "from app import db" 
+3) "db.create_all()”
+4) Exit Python3
+5) Run Python3 app.py in root directory
 
 # Useful Links
 
