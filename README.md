@@ -17,6 +17,11 @@ This project, named 'Friends' is built in compliance with Project Requirements S
  **Team X:** Bryan Arevalo, Henry Puma, Frank Orefice, Peter Ye
 
 # Instructions 
+**Important:**
+You must have pip from python3 installed and the following packages:
+- pip install flask
+- pip install sqlalchemy
+
 Electron Setup:
 1) git clone https://github.com/12NaN/CSc322-TeamX-Software-Engineering-Project.git
 2) cd CSc322-TeamX-Software-Engineering-Project
@@ -34,11 +39,21 @@ DB in Python:
 
 # Useful Links
 
+**Requirements**
+
+[SQLITE](https://www.sqlite.org/download.html)
+[Node.js](https://nodejs.org/en/)
+[Python 3](https://www.python.org/downloads/)
+
+
+**Specifications**
 [Project Requirements](http://www-cs.ccny.cuny.edu/~csjie/322/s20/spec_s20.docx)
 
 [AcTS Spec Report Template (Phase 1)](http://www-cs.ccny.cuny.edu/~csjie/322/spec_sample.pdf)
     
 [AcTS Design Report Template (Phase 2)](http://www-cs.engr.ccny.cuny.edu/~csjie/322/design.txt)
+
+**Design**
 
 [SYSTEM GUI Design](https://www.figma.com/file/CgbIsCtYQ9D9REkQMNbv2t/FRIENDS)   
 
