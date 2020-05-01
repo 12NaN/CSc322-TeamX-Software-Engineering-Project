@@ -42,11 +42,14 @@ DB in Python:
 **Requirements**
 
 [SQLITE](https://www.sqlite.org/download.html)
+
 [Node.js](https://nodejs.org/en/)
+
 [Python 3](https://www.python.org/downloads/)
 
 
 **Specifications**
+
 [Project Requirements](http://www-cs.ccny.cuny.edu/~csjie/322/s20/spec_s20.docx)
 
 [AcTS Spec Report Template (Phase 1)](http://www-cs.ccny.cuny.edu/~csjie/322/spec_sample.pdf)
