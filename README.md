@@ -22,6 +22,10 @@ You must have pip from python3 installed and the following packages:
 - pip install flask
 - pip install sqlalchemy
 
+Once you have downloaded Node.js from the links below, or if you have Node.js installed:
+
+- (npx create-react-app client)
+
 Electron Setup:
 1) git clone https://github.com/12NaN/CSc322-TeamX-Software-Engineering-Project.git
 2) cd CSc322-TeamX-Software-Engineering-Project
