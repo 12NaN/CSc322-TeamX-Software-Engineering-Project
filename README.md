@@ -41,6 +41,10 @@ DB in Python:
 4) Exit Python3
 5) Run Python3 app.py in root directory
 
+# Prototypes
+
+![Image Walkthrough](./TeamX.gif)
+
 # Useful Links
 
 **Requirements**
