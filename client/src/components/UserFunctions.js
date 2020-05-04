@@ -83,6 +83,7 @@ export const getProjects = () =>{
       console.log(err)
     })
 }
+
 function addItem(e) {
   // if enter key is pressed on the form input, add new item
   if (e.which == 13 || e.keyCode == 13) {

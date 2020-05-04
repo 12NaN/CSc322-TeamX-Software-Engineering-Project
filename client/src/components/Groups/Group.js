@@ -8,6 +8,8 @@ import Evaluations from './Evaluations';
 import Warnings from './Warnings';
 import Posts from './Posts';
 import image from '../ProfileImages/user.png';
+import axios from 'axios'
+
 class Group extends Component {
     constructor(props){
         super(props);
@@ -20,6 +22,23 @@ class Group extends Component {
             posts:[]
         }
        // this.setState({id: this.props.id, name: this.props.name, members: this.props.members});
+    }
+    componentDidMount(){
+        const {match: {params}} = this.props
+        axios.get(`/projects/${params.id}`)
+            .then(response => {
+            console.log("hi")
+         //   console.log(response.data["Group"][0]["group_id"])
+            console.log(response.data['Group'][0]["group_name"])
+            this.setState({
+                name: response.data['Group'][0]["group_name"]
+            })
+            
+            return response.data
+        })
+        .catch(err => {
+            console.log(err)
+        }) 
     }
     render() {
         return (

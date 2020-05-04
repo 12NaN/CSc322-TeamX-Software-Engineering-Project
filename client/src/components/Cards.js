@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import {Card} from 'react-bootstrap';
 import Bryan from './ProfileImages/user.png';
+import {Link} from 'react-router-dom';
 class Cards extends Component {
     constructor(props){
         super(props);
@@ -28,6 +29,9 @@ class Cards extends Component {
                         <Card.Text>
                             {this.state.rating}
                         </Card.Text>
+                        <Link to={this.props.type == "user" ? "/users/" : "/projects/" + this.props.id}>
+                            View Page
+                        </Link>
                     </Card.Body>
                 </Card>
             </div>

@@ -21,7 +21,7 @@ class Projects extends Component {
         if(!this.state.data) return null;
         
         const listItems = this.state.groups.map((i) =>
-            <Cards name={i["group_name"]} rating={i["rating"]}/>
+            <Cards name={i["group_name"]} rating={i["rating"]} id={i["group_id"]}/>
         );
         return (
             <div>

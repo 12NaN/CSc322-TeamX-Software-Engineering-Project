@@ -151,6 +151,9 @@ class UserSchema(ma.SQLAlchemySchema):
 class GroupSchema(ma.SQLAlchemySchema):
     class Meta:
         fields = ('group_id', 'group_name', 'rating')
+class GroupMemSchema(ma.SQLAlchemySchema):
+    class Meta:
+        fields = ('group_id', 'user_id')
 
 app.config['JWT_SECRET_KEY'] = 'secret'
 #socketIo = SocketIO(app, cors_allowed_origins="*")
@@ -238,6 +241,31 @@ def profiles():
     }
     return jsonify(result)
 
+@app.route("/user/<user_id>", methods=['GET'])
+def profile(user_id):
+    user = User.query.filter(id=user_id)
+    us = UserSchema(many=True)
+    output = us.dump(user)
+    result = {
+        'User':output
+    }
+    return jsonify(result)
+
+@app.route("/projects/<id>", methods=['GET'])
+def groupsPage(id):
+    print(id)
+    group = Groups.query.filter_by(group_id=id)
+    groupMem = GroupMembers.query.filter_by(group_id=id)
+    g = GroupSchema(many=True)
+    gM = GroupMemSchema(many=True)
+    output = g.dump(group)
+    output2 = gM.dump(groupMem)
+    result = {
+        'Group':output,
+        'GroupMembers':output2
+    }
+    return jsonify(result)
+
 @app.route('/', methods=['GET'])
 def profilesAndGroups():
     users = User.query.order_by(User.rating).limit(3)
@@ -272,7 +300,6 @@ def login():
         result = jsonify({"error": "Invalid username and password"})
 
     return result
-
 # This route redirects the removeToDo function to be used at the group page
 
 
