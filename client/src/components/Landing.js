@@ -1,9 +1,35 @@
-import React, { Component } from 'react'
-import WELCOME from './ProfileImages/WELCOME.png'
-import LOGO2 from './ProfileImages/LOGO2.png'
+import React, { Component } from 'react';
+import { getProfilesAndGroups } from './UserFunctions'
+import WELCOME from './ProfileImages/WELCOME.png';
+import Cards from './Cards';
+import LOGO2 from './ProfileImages/LOGO2.png';
 
 class Landing extends Component {
+  constructor() {
+    super()
+    this.state = {
+      groups: [],
+      profiles: [],
+      dataFetched: false
+    }
+  }
+  componentDidMount() {
+    getProfilesAndGroups().then(res =>{
+      
+      this.setState({
+        groups: res["Groups"],
+        profiles: res["Users"],
+        dataFetched: true
+      })
+      console.log(this.state.groups[0])
+      console.log(this.state.profiles[1]["user_name"])
+     console.log(res["Groups"][0].group_name)
+    })
+    //response.data["Groups"][0]["group_id"]
+  }
+
   render() {
+    if(!this.state.dataFetched) return null;
     return (
       <div className="container">
         <div className="jumbotron mt-5">
@@ -13,8 +39,19 @@ class Landing extends Component {
 
             <hr />
             <h4 className="text-center">Top 3 Rated Projects</h4>
+            
+            <Cards name={this.state.profiles[0]["user_name"]} rating={this.state.profiles[0]["rating"]}/>
+            <Cards name={this.state.profiles[1]["user_name"]} rating={this.state.profiles[1]["rating"]}/>
+            <Cards name={this.state.profiles[2]["user_name"]} rating={this.state.profiles[2]["rating"]}/>
+
             <hr />
+            
             <h4 className="text-center">Top 3 Rated User Profiles</h4>
+            <Cards name={this.state.groups[0]["group_name"]} rating={this.state.groups[0]["rating"]}/>
+            <Cards name={this.state.groups[1]["group_name"]}rating={this.state.groups[1]["rating"]}/>
+            <Cards name={this.state.groups[2]["group_name"]} rating={this.state.groups[2]["rating"]}/>
+
+            
           </div>
         </div>
       </div>

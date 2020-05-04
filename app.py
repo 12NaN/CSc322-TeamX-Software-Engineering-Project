@@ -9,6 +9,9 @@ from flask_jwt_extended import (create_access_token)
 from pusher import Pusher
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 import json
+from flask_marshmallow import Marshmallow
+from marshmallow_sqlalchemy import ModelSchema
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'mysecret'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
@@ -22,14 +25,38 @@ pusher = Pusher(
     ssl=True
 )
 db = SQLAlchemy(app)
+ma = Marshmallow(app)
 # In Python terminal "from app import db" then "db.create_all()"
-"""
-class History(db.Model):
+class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    message = db.Column(db.String(500))
+    user_name = db.Column(db.String(20), unique=True, nullable=False)
+    first_name = db.Column(db.String(20), nullable=False)
+    last_name = db.Column(db.String(20), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    interest = db.Column(db.String(120), nullable=False)
+    references = db.Column(db.String(20), nullable=False)
+    image_file = db.Column(db.String(20), nullable=False,
+                           default='client/src/components/ProfileImages/user.jpg')
+    password = db.Column(db.String(60), nullable=False)
+    posts = db.relationship('Post', backref='author', lazy=True)
+    user_type = db.Column(db.Integer, nullable=False)
+    rating = db.Column(db.Integer, nullable=False)
+
+    def get_reset_token(self, expires_sec=1800):
+        s = Serializer(app.config['SECRET_KEY'], expires_sec)
+        return s.dumps({'user_id': self.id}).decode('utf-8')
+
+    @staticmethod
+    def verify_reset_token(token):
+        s = Serializer(app.config['SECRET_KEY'])
+        try:
+            user_id = s.loads(token)['user_id']
+        except:
+            return None
+        return User.query.get(user_id)
+
     def __repr__(self):
-        return f"History('{self.user_id}')"
-"""
+        return f"User('{self.user_name}', '{self.email}', '{self.image_file}')"
 
 # This class creates the BlackBox table in SQLITE
 
@@ -95,36 +122,6 @@ class Post(db.Model):
 # This class creates the User table in SQLITE
 
 
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_name = db.Column(db.String(20), unique=True, nullable=False)
-    first_name = db.Column(db.String(20), nullable=False)
-    last_name = db.Column(db.String(20), nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    interest = db.Column(db.String(120), nullable=False)
-    references = db.Column(db.String(20), nullable=False)
-    image_file = db.Column(db.String(20), nullable=False,
-                           default='client/src/components/ProfileImages/user.jpg')
-    password = db.Column(db.String(60), nullable=False)
-    posts = db.relationship('Post', backref='author', lazy=True)
-    user_type = db.Column(db.Integer, nullable=False)
-    rating = db.Column(db.Integer, nullable=False)
-
-    def get_reset_token(self, expires_sec=1800):
-        s = Serializer(app.config['SECRET_KEY'], expires_sec)
-        return s.dumps({'user_id': self.id}).decode('utf-8')
-
-    @staticmethod
-    def verify_reset_token(token):
-        s = Serializer(app.config['SECRET_KEY'])
-        try:
-            user_id = s.loads(token)['user_id']
-        except:
-            return None
-        return User.query.get(user_id)
-
-    def __repr__(self):
-        return f"User('{self.user_name}', '{self.email}', '{self.image_file}')"
 
 # This class creates the WhiteBox table in SQLITE
 
@@ -148,16 +145,22 @@ class Results(db.Model):
     id = db.Column('id', db.Integer, primary_key=True)
     vote = db.Column('data', db.Integer)
 
+class UserSchema(ma.SQLAlchemySchema):
+    class Meta:
+        fields = ('id', 'user_name', 'rating')
+class GroupSchema(ma.SQLAlchemySchema):
+    class Meta:
+        fields = ('group_id', 'group_name', 'rating')
 
 app.config['JWT_SECRET_KEY'] = 'secret'
-socketIo = SocketIO(app, cors_allowed_origins="*")
+#socketIo = SocketIO(app, cors_allowed_origins="*")
 
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
 
 CORS(app)
 
-
+"""
 @socketIo.on('vote')
 # This function handles voting results and sends them to the results database.
 def handleVote(ballot):
@@ -175,25 +178,7 @@ def handleVote(ballot):
 
     emit('vote_results', {'Monday': mon, 'Tuesday': tue, 'Wednesday': wed,
                           'Thursday': thur, 'Friday': fri, 'Saturday': sat, 'Sunday': sun}, broadcast=True)
-
-
 """
-@socketIo.on("connect")
-def chatHistory():
-    messages = History.query.all()
-    send(messages, broadcast=True)
-    return None
-"""
-@socketIo.on("message")
-def handleMessage(msg):
-    print(msg)
-    #message = History(message=msg)
-    # db.session.add(message)
-    # db.session.commit()
-    send(msg, broadcast=True)
-    return None
-
-
 # The register() function grabs the input from the register UI page and stores them in a database. Also
 # the password is hashed using an API.
 @app.route('/users/register', methods=['POST'])
@@ -233,7 +218,41 @@ def register():
     }
 
     return jsonify({'result': result})
+@app.route('/projects', methods=['GET'])
+def groups():
+    groups = Groups.query.order_by(Groups.rating)
+    group = GroupSchema(many=True)
+    output = group.dump(groups)
+    result = {
+        'Groups': output
+    }
+    return jsonify(result)
 
+@app.route('/users', methods=['GET'])
+def profiles():
+    users = User.query.order_by(User.rating)
+    user = UserSchema(many=True)
+    output = user.dump(users)
+    result = {
+        'Users' : output
+    }
+    return jsonify(result)
+
+@app.route('/', methods=['GET'])
+def profilesAndGroups():
+    users = User.query.order_by(User.rating).limit(3)
+    groups = Groups.query.order_by(Groups.rating).limit(3)
+    user = UserSchema(many=True)
+    group = GroupSchema(many=True)
+    output = user.dump(users)
+    output2 = group.dump(groups)
+    
+    result = {
+        'Users' : output,
+        'Groups': output2
+    }
+
+    return result
 # This route redirects the login function to be used at the /users/login page
 
 
@@ -285,7 +304,7 @@ def account():
     image_file = url_for(
         'static', filename='client/src/components/ProfileImages/user.jpg')
 
-
+"""
 # Deletes all rows from the following tables. BlackBox, BlackList, Groups, User, WhiteBox
 def delete_table_data():
     db.session.query(BlackBox).delete()
@@ -421,12 +440,13 @@ def populate_table_data():
 
     # commit additions
     db.session.commit()
-
-
+    print("Done")
+"""
 if __name__ == '__main__':
-    # app.run(debug=True)
+   # delete_table_data()
+   # populate_table_data()
+    app.run(debug=True)
+    
 
-    # delete_table_data()
-    populate_table_data()
 
-    socketIo.run(app)
+   # socketIo.run(app)

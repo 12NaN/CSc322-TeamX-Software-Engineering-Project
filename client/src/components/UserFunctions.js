@@ -3,14 +3,15 @@ import axios from 'axios'
 export const register = newUser => {
   return axios
     .post('users/register', {
+      user_name: newUser.user_name,
       first_name: newUser.first_name,
       last_name: newUser.last_name,
-      user_name: newUser.user_name,
       email: newUser.email,
       password: newUser.password,
-      references: newUser.reference,
       interest: newUser.interest,
-      rating: 0
+      references: newUser.reference,
+      user_type: newUser.user_type == null ? 0 : newUser.user_type,
+      rating: newUser.rating == null ? 0 : newUser.rating
     })
     .then(response => {
       console.log('Registered')
@@ -34,11 +35,11 @@ export const login = user => {
 
 export const getProfile = user => {
   return axios
-    .get('users/profile', {
+    .post('/profile', {
       //headers: { Authorization: ` ${this.getToken()}` }
     })
     .then(response => {
-      console.log(response)
+      console.log("hi")
       return response.data
     })
     .catch(err => {
@@ -46,20 +47,42 @@ export const getProfile = user => {
     })
 }
 
-export const getGroup = user =>{
+export const getProfilesAndGroups = () =>{
   return axios
-    .get('users/profile', {
-
+    .get('http://localhost:5000/')
+    .then(response => {
+      console.log(response.data["Groups"])
+      return response.data
+    })
+    .catch(err => {
+      console.log("NOOOOOOOOOOOO")
+      console.log(err)
+    })
+}
+export const getProfiles = () =>{
+  return axios
+    .get('/users')
+    .then(response => {
+      console.log(response.data)
+      return response.data
+    })
+    .catch(err => {
+      console.log(err)
+    })
+}
+export const getProjects = () =>{
+  return axios
+    .get('/projects', {
     })
     .then(response => {
-      console.log(response)
+      console.log("hi")
+      console.log(response.data["Groups"])
       return response.data
     })
     .catch(err => {
       console.log(err)
     })
 }
-
 function addItem(e) {
   // if enter key is pressed on the form input, add new item
   if (e.which == 13 || e.keyCode == 13) {
