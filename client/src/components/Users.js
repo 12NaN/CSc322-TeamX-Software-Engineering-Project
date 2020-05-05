@@ -21,7 +21,7 @@ class Users extends Component {
     render() {
         if(!this.state.data) return null;
         const listItems = this.state.users.map((i) =>
-            <Cards name={i["user_name"]} rating={i["rating"]}/>
+            <Cards name={i["user_name"]} rating={i["rating"]} id={i["id"]} type={"user"}/>
         );
         return (
             <div>

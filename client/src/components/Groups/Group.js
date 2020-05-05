@@ -31,7 +31,8 @@ class Group extends Component {
          //   console.log(response.data["Group"][0]["group_id"])
             console.log(response.data['Group'][0]["group_name"])
             this.setState({
-                name: response.data['Group'][0]["group_name"]
+                name: response.data['Group'][0]["group_name"],
+                rating: response.data['Group'][0]["rating"]
             })
             
             return response.data
@@ -45,7 +46,7 @@ class Group extends Component {
             <div>
                 <img src={image} className="center" style={{height:"200px", width:"200px"}}/>
                 <h1 id="groupName">{this.state.name}</h1>
-                <Ratings/>
+                <Ratings rating={this.state.rating}/>
                 <hr></hr>
                 <Sections sectionName="Posts" component={<Posts/>}/>
                 <hr></hr>

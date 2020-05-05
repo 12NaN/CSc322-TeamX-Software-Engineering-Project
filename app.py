@@ -147,7 +147,7 @@ class Results(db.Model):
 
 class UserSchema(ma.SQLAlchemySchema):
     class Meta:
-        fields = ('id', 'user_name', 'rating')
+        fields = ('id', 'user_name', 'email', 'interest', 'rating')
 class GroupSchema(ma.SQLAlchemySchema):
     class Meta:
         fields = ('group_id', 'group_name', 'rating')
@@ -241,13 +241,21 @@ def profiles():
     }
     return jsonify(result)
 
-@app.route("/user/<user_id>", methods=['GET'])
+@app.route("/users/<user_id>", methods=['GET'])
 def profile(user_id):
-    user = User.query.filter(id=user_id)
+    user = User.query.filter_by(id=user_id)
+    #group = Groups.query.filter_by(group_id=id)
+    groupMem = GroupMembers.query.filter_by(user_id=user_id)
     us = UserSchema(many=True)
+    #g = GroupSchema(many=True)
+    gM = GroupMemSchema(many=True)
     output = us.dump(user)
+    #output2 = g.dump(group)
+    output3 = gM.dump(groupMem)
     result = {
         'User':output
+        #'Group': output2,
+        #'GroupMem': output3
     }
     return jsonify(result)
 
