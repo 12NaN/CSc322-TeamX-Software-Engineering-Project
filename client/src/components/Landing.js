@@ -47,9 +47,9 @@ class Landing extends Component {
             <hr />
             
             <h4 className="text-center">Top 3 Rated User Profiles</h4>
-            <Cards name={this.state.groups[0]["group_name"]} rating={this.state.groups[0]["rating"]} id={this.state.profiles[0]["group_id"]} type={"project"}/>
-            <Cards name={this.state.groups[1]["group_name"]}rating={this.state.groups[1]["rating"]} id={this.state.profiles[1]["group_id"]} type={"project"}/>
-            <Cards name={this.state.groups[2]["group_name"]} rating={this.state.groups[2]["rating"]} id={this.state.profiles[2]["group_id"]} type={"project"}/>
+            <Cards name={this.state.groups[0]["group_name"]} rating={this.state.groups[0]["rating"]} id={this.state.groups[0]["group_id"]} type={"project"}/>
+            <Cards name={this.state.groups[1]["group_name"]}rating={this.state.groups[1]["rating"]} id={this.state.groups[1]["group_id"]} type={"project"}/>
+            <Cards name={this.state.groups[2]["group_name"]} rating={this.state.groups[2]["rating"]} id={this.state.groups[2]["group_id"]} type={"project"}/>
 
             
           </div>
