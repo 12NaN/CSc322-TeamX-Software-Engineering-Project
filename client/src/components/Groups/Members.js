@@ -13,9 +13,8 @@ class Members extends Component {
         console.log(this.state.members);
     }
     render() {
-        let j = 1;
         const listItems = this.state.members.map((i) =>
-            <li key={j++}>{i}</li>
+            <li>{i}</li>
         );
         return (
             <div>

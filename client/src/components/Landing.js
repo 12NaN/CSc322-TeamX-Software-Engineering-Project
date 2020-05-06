@@ -40,16 +40,16 @@ class Landing extends Component {
             <hr />
             <h4 className="text-center">Top 3 Rated Projects</h4>
             
-            <Cards name={this.state.profiles[0]["user_name"]} rating={this.state.profiles[0]["rating"]} type={"project"}/>
-            <Cards name={this.state.profiles[1]["user_name"]} rating={this.state.profiles[1]["rating"]} type={"project"}/>
-            <Cards name={this.state.profiles[2]["user_name"]} rating={this.state.profiles[2]["rating"]} type={"project"}/>
+            <Cards name={this.state.profiles[0]["user_name"]} rating={this.state.profiles[0]["rating"]} id={this.state.profiles[0]["id"]} type={"user"}/>
+            <Cards name={this.state.profiles[1]["user_name"]} rating={this.state.profiles[1]["rating"]} id={this.state.profiles[1]["id"]} type={"user"}/>
+            <Cards name={this.state.profiles[2]["user_name"]} rating={this.state.profiles[2]["rating"]} id={this.state.profiles[2]["id"]} type={"user"}/>
 
             <hr />
             
             <h4 className="text-center">Top 3 Rated User Profiles</h4>
-            <Cards name={this.state.groups[0]["group_name"]} rating={this.state.groups[0]["rating"]} type={"user"}/>
-            <Cards name={this.state.groups[1]["group_name"]}rating={this.state.groups[1]["rating"]} type={"user"}/>
-            <Cards name={this.state.groups[2]["group_name"]} rating={this.state.groups[2]["rating"]} type={"user"}/>
+            <Cards name={this.state.groups[0]["group_name"]} rating={this.state.groups[0]["rating"]} id={this.state.groups[0]["group_id"]} type={"project"}/>
+            <Cards name={this.state.groups[1]["group_name"]}rating={this.state.groups[1]["rating"]} id={this.state.groups[1]["group_id"]} type={"project"}/>
+            <Cards name={this.state.groups[2]["group_name"]} rating={this.state.groups[2]["rating"]} id={this.state.groups[2]["group_id"]} type={"project"}/>
 
             
           </div>

@@ -29,7 +29,7 @@ class Cards extends Component {
                         <Card.Text>
                             {this.state.rating}
                         </Card.Text>
-                        <Link to={this.props.type == "user" ? "/users/" : "/projects/" + this.props.id}>
+                        <Link to={this.props.type == "user" ? "/users/"+ this.props.id: "/projects/" + this.props.id}>
                             View Page
                         </Link>
                     </Card.Body>
