@@ -14,12 +14,10 @@ class Group extends Component {
     constructor(props){
         super(props);
         this.state = {
-            id: '1',
-            name: 'Team X',
-            members: ["Frank", "Bryan", "Henry", "Peter"],
-            image: "",
-            rating: 5, 
-            posts:[]
+            name: '',
+            members: [],
+            rating: 0, 
+            data: false
         }
        // this.setState({id: this.props.id, name: this.props.name, members: this.props.members});
     }
@@ -28,13 +26,31 @@ class Group extends Component {
         axios.get(`/projects/${params.id}`)
             .then(response => {
             console.log("hi")
-         //   console.log(response.data["Group"][0]["group_id"])
+            console.log(response.data["GroupMembers"])
+            console.log(response.data['Users'])
             console.log(response.data['Group'][0]["group_name"])
             this.setState({
                 name: response.data['Group'][0]["group_name"],
                 rating: response.data['Group'][0]["rating"]
             })
+            console.log(response.data['Group'][0])
             
+            let j = 0;
+            let k = []
+            for(let i = 0; i < response.data['Users'].length; i++){
+                if(j < response.data['GroupMembers'].length && response.data['GroupMembers'][j]["user_id"] == response.data['Users'][i]["id"]){
+                    k.push(response.data['Users'][i]["user_name"])
+
+                    
+                   //console.log(response.data['Users'][i]["id"])
+                    j++;
+                }
+            }
+            console.log(this.state.members)
+            this.setState({
+                members: k,
+                data:true
+            })
             return response.data
         })
         .catch(err => {
@@ -42,6 +58,7 @@ class Group extends Component {
         }) 
     }
     render() {
+        if(!this.state.data) return null
         return (
             <div>
                 <img src={image} className="center" style={{height:"200px", width:"200px"}}/>

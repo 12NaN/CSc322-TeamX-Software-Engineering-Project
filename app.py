@@ -264,13 +264,17 @@ def groupsPage(id):
     print(id)
     group = Groups.query.filter_by(group_id=id)
     groupMem = GroupMembers.query.filter_by(group_id=id)
+    users = User.query.all()
+    u = UserSchema(many=True)
     g = GroupSchema(many=True)
     gM = GroupMemSchema(many=True)
     output = g.dump(group)
     output2 = gM.dump(groupMem)
+    output3 = u.dump(users)
     result = {
         'Group':output,
-        'GroupMembers':output2
+        'GroupMembers':output2,
+        'Users': output3
     }
     return jsonify(result)
 
