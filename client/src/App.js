@@ -9,6 +9,7 @@ import Login from './components/Login'
 import Register from './components/Register'
 import Profile from './components/Profile'
 import Group from './components/Groups/Group'
+import Notifications from './components/Notifications'
 
 class App extends Component {
   render() {
@@ -22,9 +23,10 @@ class App extends Component {
             <Route exact path="/login" component={Login} />
             <Route exact path="/profile" component={Profile} />
             <Route exact path="/projects" component={Projects} />
-            <Route exact path="/projects/:id" component={Group}/>
+            <Route exact path="/projects/:id" component={Group} />
             <Route exact path="/users" component={Users} />
-            <Route exact path="/group" component={Group}/>
+            <Route exact path="/group" component={Group} />
+            <Route exact path="/notifications" component={Notifications} />
           </div>
         </div>
       </Router>
