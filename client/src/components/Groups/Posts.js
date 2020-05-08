@@ -3,6 +3,13 @@ import { StreamApp, NotificationDropdown, FlatFeed, LikeButton, Activity, Commen
 import 'react-activity-feed/dist/index.css';
 
 class Posts extends React.Component {
+  constructor(props){
+    super(props);
+    this.state = {
+     // userName: this.props.userName,
+      groupID: this.props.groupID
+    }
+  }
   render () {
     return (
       <StreamApp
@@ -12,8 +19,8 @@ class Posts extends React.Component {
       >
         <NotificationDropdown notify />
         <StatusUpdateForm
-          feedGroup="timeline"
-          userId="user-one" />
+          feedGroup="teamX"
+          userId="frank" />
         <FlatFeed
           options={ {reactions: { recent: true } } }
           notify

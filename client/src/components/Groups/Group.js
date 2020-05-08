@@ -9,11 +9,13 @@ import Warnings from './Warnings';
 import Posts from './Posts';
 import image from '../ProfileImages/user.png';
 import axios from 'axios'
+import Form from './Forms';
 
 class Group extends Component {
     constructor(props){
         super(props);
         this.state = {
+            id: '',
             name: '',
             members: [],
             rating: 0, 
@@ -30,6 +32,7 @@ class Group extends Component {
             console.log(response.data['Users'])
             console.log(response.data['Group'][0]["group_name"])
             this.setState({
+                id: response.data['Group'][0]["group_id"],
                 name: response.data['Group'][0]["group_name"],
                 rating: response.data['Group'][0]["rating"]
             })
@@ -39,14 +42,12 @@ class Group extends Component {
             let k = []
             for(let i = 0; i < response.data['Users'].length; i++){
                 if(j < response.data['GroupMembers'].length && response.data['GroupMembers'][j]["user_id"] == response.data['Users'][i]["id"]){
-                    k.push(response.data['Users'][i]["user_name"])
-
-                    
+                    k.push(response.data['Users'][i]["user_name"])                    
                    //console.log(response.data['Users'][i]["id"])
                     j++;
                 }
             }
-            console.log(this.state.members)
+            console.log(this.state.id)
             this.setState({
                 members: k,
                 data:true
@@ -65,13 +66,13 @@ class Group extends Component {
                 <h1 id="groupName">{this.state.name}</h1>
                 <Ratings rating={this.state.rating}/>
                 <hr></hr>
-                <Sections sectionName="Posts" component={<Posts/>}/>
+                <Sections sectionName="Posts" component={<Form group = {this.state.id} user = {1}/>}/>
                 <hr></hr>
                 <Sections sectionName="Members" component={<Members members={this.state.members}/>}/>
                 <hr></hr>
                 <Sections sectionName="Tasks" component={<Todo/>}/>
                 <hr></hr>
-                <Sections sectionName="Poll" component={<Poll/>}/>
+                <Sections sectionName="Poll" component={<Poll groupID= {this.state.id}/>}/>
                 <hr></hr>
                 <Sections sectionName="Evaluations" component={<Evaluations/>}/>
                 <hr></hr>

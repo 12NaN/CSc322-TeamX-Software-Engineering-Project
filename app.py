@@ -115,9 +115,10 @@ class Post(db.Model):
                             default=datetime.utcnow)
     content = db.Column(db.Text, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    group_id = db.Column(db.Integer, db.ForeignKey('groups.group_id'), nullable=False)
 
     def __repr__(self):
-        return f"Post('{self.title}', '{self.date_posted}')"
+        return f"Post('{self.title}', '{self.content}', '{self.user_id}', '{self.group_id}')"
 
 # This class creates the User table in SQLITE
 
@@ -145,6 +146,17 @@ class Results(db.Model):
     id = db.Column('id', db.Integer, primary_key=True)
     vote = db.Column('data', db.Integer)
 
+class Todo(db.Model):
+    __tablename__ = 'todo'
+    id = db.Column('id', db.Integer, primary_key=True)
+    text = db.Column(db.String(50), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey(
+        'user.id', ondelete="CASCADE"))
+    status = db.Column(db.Integer, nullable=False)
+    group_id = db.Column(db.Integer, db.ForeignKey(
+        'groups.group_id', ondelete="CASCADE"))
+
+
 class UserSchema(ma.SQLAlchemySchema):
     class Meta:
         fields = ('id', 'user_name', 'email', 'interest', 'rating')
@@ -154,6 +166,9 @@ class GroupSchema(ma.SQLAlchemySchema):
 class GroupMemSchema(ma.SQLAlchemySchema):
     class Meta:
         fields = ('group_id', 'user_id')
+class PostSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        fields = ('title', 'content', 'user_id', 'group_id')
 
 app.config['JWT_SECRET_KEY'] = 'secret'
 #socketIo = SocketIO(app, cors_allowed_origins="*")
@@ -265,16 +280,20 @@ def groupsPage(id):
     group = Groups.query.filter_by(group_id=id)
     groupMem = GroupMembers.query.filter_by(group_id=id)
     users = User.query.all()
+    posts = Post.query.filter_by(group_id=id)
     u = UserSchema(many=True)
     g = GroupSchema(many=True)
     gM = GroupMemSchema(many=True)
+    p = PostSchema(many=True)
     output = g.dump(group)
     output2 = gM.dump(groupMem)
     output3 = u.dump(users)
+    output4 = p.dump(posts)
     result = {
         'Group':output,
         'GroupMembers':output2,
-        'Users': output3
+        'Users': output3,
+        'Posts': output4
     }
     return jsonify(result)
 
@@ -315,24 +334,71 @@ def login():
 # This route redirects the removeToDo function to be used at the group page
 
 
-@app.route("/group/remove-todo/<item_id>")
-def removeTodo(item_id):
+@app.route("/projects/<group_id>/remove-todo/<item_id>")
+def removeTodo(group_id, item_id):
     data = {'id': item_id}
-    pusher.trigger('todo', 'item-removed', data)
+    pusher.trigger("room", 'item-removed', data)
+    print(group_id)
     return jsonify(data)
 
     # endpoint for updating todo item
 
+@app.route('/projects/<group_id>', methods=['GET'])
+def getTodo(group_id):
+    todo = Todo.query.filter_by(group_id=group_id)
+    to = todoSchema(many=True)
+    output = to.dump(todo)
+    
+    result = {
+        'Todo' : output
+    }
+    return result
+
+@app.route('/projects/<group_id>', methods=['POST'])
+def posts(group_id):
+  #  id = request.json['id']
+    post = PostSchema()
+    taboo = open('taboo.txt', 'r')
+    title = request.json['title']
+    content = request.json['content']   
+    for line in taboo:
+        stripped_line = line.strip()
+        #print(stripped_line)
+        if stripped_line in title:
+            print(stripped_line)
+            title = title.replace(stripped_line, '*'*len(stripped_line))
+        if stripped_line in content:
+            print(stripped_line)
+            content = content.replace(stripped_line, '*'*len(stripped_line))
+    taboo.close()
+#    date = request.json['date_posted']
+    user = request.json['user_id']
+    group = request.json['group_id']
+    new_post = Post(title = title, content = content, user_id = user, group_id = group)
+    db.session.add(new_post)
+    db.session.commit()
+ 
+    print("POSSSSSSSSSST")
+    result = post.dump(Post.query.filter_by(group_id=group_id))
+    print(result)
+    return jsonify({'result': result})
+@app.route('/projects/<group_id>', methods = ['POST'])
+def addTodo():
+    data = json.loads(request.data) # load JSON data from request
+    pusher.trigger('room', 'item-added', data) # trigger `item-added` event on `todo` channel
+    return jsonify(data)
 # This route redirects the updateToDo function to be used at the group page
 
 
-@app.route('/group/update-todo/<item_id>', methods=['POST'])
-def updateTodo(item_id):
+@app.route('/projects/<group_id>', methods=['POST'])
+def updateTodo(group_id):
     data = {
         'id': item_id,
         'completed': json.loads(request.data).get('completed', 0)
     }
-    pusher.trigger('todo', 'item-updated', data)
+    #'private-'+str(group_id)
+    pusher.trigger("room", 'item-updated', data)
+    print("pushed")
     return jsonify(data)
 
 # This route redirects the account function to be used at the profile page
@@ -350,6 +416,7 @@ def delete_table_data():
     db.session.query(BlackList).delete()
     db.session.query(Groups).delete()
     db.session.query(User).delete()
+    db.session.query(Todo).delete()
     db.session.query(WhiteBox).delete()
     db.session.commit()
 
@@ -433,6 +500,10 @@ def populate_table_data():
     whitebox1 = WhiteBox(
         user_id=1, whtbxd_prsn_id=5, group_id=0)
 
+    todo1 = Todo(id=1, text="Get em",user_id=9,status=0,group_id=3)
+    todo2 = Todo(id=2, text="Rule",user_id=8,status=1,group_id=3)
+    todo3 = Todo(id=3, text="Buy food",user_id=6,status=1,group_id=2)
+    todo4 = Todo(id=4, text="Buy food again",user_id=2,status=0,group_id=1)
     # add users and relations
     db.session.add(admin)
 
@@ -476,14 +547,18 @@ def populate_table_data():
     db.session.add(gm29)
 
     db.session.add(whitebox1)
-
+    db.session.add(todo1)
+    db.session.add(todo2)
+    db.session.add(todo3)
+    db.session.add(todo4)
     # commit additions
     db.session.commit()
     print("Done")
 """
 if __name__ == '__main__':
-   # delete_table_data()
-   # populate_table_data()
+    
+    #delete_table_data()
+    #populate_table_data()
     app.run(debug=True)
     
 

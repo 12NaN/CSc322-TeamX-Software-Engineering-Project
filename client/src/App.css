@@ -1,7 +1,10 @@
 body {
   background: rgb(255, 173, 65);
 }
-
+#postImg{
+  width: 10px;
+  height: 10px;
+}
 .todo-container {
   background: rgb(41, 33, 33);
   width: 40vw;

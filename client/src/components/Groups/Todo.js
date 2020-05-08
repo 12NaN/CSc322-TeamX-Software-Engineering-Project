@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import './Todo.css';
 
 
 function Task({ task, index, completeTask, removeTask }) {

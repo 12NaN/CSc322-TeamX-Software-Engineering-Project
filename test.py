@@ -1,5 +1,5 @@
 import sqlite3
 conn = sqlite3.connect('site.db')
 c = conn.cursor()
-c.execute('SELECT * from Groups')
+c.execute('SELECT * from Post')
 print(c.fetchall())
