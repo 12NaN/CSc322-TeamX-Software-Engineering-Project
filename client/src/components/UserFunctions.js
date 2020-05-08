@@ -47,7 +47,8 @@ export const getProfile = user => {
     })
 }
 
-export const getProfilesAndGroups = () =>{
+
+export const getProfilesAndGroups = () => {
   return axios
     .get('http://localhost:5000/')
     .then(response => {
@@ -59,7 +60,7 @@ export const getProfilesAndGroups = () =>{
       console.log(err)
     })
 }
-export const getProfiles = () =>{
+export const getProfiles = () => {
   return axios
     .get('/users')
     .then(response => {
@@ -70,7 +71,23 @@ export const getProfiles = () =>{
       console.log(err)
     })
 }
-export const getProjects = () =>{
+
+export const getNotifications = () => {
+  return axios
+    .get('/notifications', {
+    })
+    .then(response => {
+      console.log("hi")
+      console.log(response.data["Notifications"])
+      return response.data
+    })
+    .catch(err => {
+      console.log(err)
+    })
+}
+
+
+export const getProjects = () => {
   return axios
     .get('/projects', {
     })
@@ -83,23 +100,22 @@ export const getProjects = () =>{
       console.log(err)
     })
 }
-
 function addItem(e) {
   // if enter key is pressed on the form input, add new item
   if (e.which == 13 || e.keyCode == 13) {
     let item = document.querySelector('.new-todo');
     fetch('/add-todo', {
       method: 'post',
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         id: `item-${Date.now()}`,
         value: item.value,
         completed: 0
       })
     })
-    .then(resp => {
-      // empty form input once a response is received
-      item.value = ""
-    });
+      .then(resp => {
+        // empty form input once a response is received
+        item.value = ""
+      });
   }
 }
 
@@ -113,7 +129,7 @@ function removeItem(id) {
 // incomplete states
 function toggleComplete(elem) {
   let id = elem.dataset.id,
-      completed = (elem.dataset.completed == "1" ? "0" : "1");
+    completed = (elem.dataset.completed == "1" ? "0" : "1");
   fetch(`/update-todo/${id}`, {
     method: 'post',
     body: JSON.stringify({ completed })

@@ -27,6 +27,8 @@ pusher = Pusher(
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
 # In Python terminal "from app import db" then "db.create_all()"
+
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_name = db.Column(db.String(20), unique=True, nullable=False)
@@ -108,6 +110,20 @@ class GroupMembers(db.Model):
 # This class creates the Post table in SQLITE
 
 
+class Notification(db.Model):
+    id = db.Column(db.Integer)
+    group_id = db.Column(db.Integer, db.ForeignKey(
+        'groups.group_id', ondelete="CASCADE"))
+    sender_id = db.Column(db.Integer, db.ForeignKey(
+        'user.id', ondelete="CASCADE"))
+    recipient_id = db.Column(db.Integer, db.ForeignKey(
+        'user.id', ondelete="CASCADE"))
+    body = db.Column(db.String(140), primary_key=True)
+
+    def __repr__(self):
+        return '<Message {}>'.format(self.body)
+
+
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
@@ -121,7 +137,6 @@ class Post(db.Model):
         return f"Post('{self.title}', '{self.content}', '{self.user_id}', '{self.group_id}')"
 
 # This class creates the User table in SQLITE
-
 
 
 # This class creates the WhiteBox table in SQLITE
@@ -160,15 +175,25 @@ class Todo(db.Model):
 class UserSchema(ma.SQLAlchemySchema):
     class Meta:
         fields = ('id', 'user_name', 'email', 'interest', 'rating')
+
+
 class GroupSchema(ma.SQLAlchemySchema):
     class Meta:
         fields = ('group_id', 'group_name', 'rating')
+
+
 class GroupMemSchema(ma.SQLAlchemySchema):
     class Meta:
         fields = ('group_id', 'user_id')
 class PostSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         fields = ('title', 'content', 'user_id', 'group_id')
+
+
+class NotificationSchema(ma.SQLAlchemySchema):
+    class Meta:
+        fields = ('id', 'sender_id', 'recipient_id', 'body')
+
 
 app.config['JWT_SECRET_KEY'] = 'secret'
 #socketIo = SocketIO(app, cors_allowed_origins="*")
@@ -236,6 +261,8 @@ def register():
     }
 
     return jsonify({'result': result})
+
+
 @app.route('/projects', methods=['GET'])
 def groups():
     groups = Groups.query.order_by(Groups.rating)
@@ -246,17 +273,32 @@ def groups():
     }
     return jsonify(result)
 
+
 @app.route('/users', methods=['GET'])
 def profiles():
     users = User.query.order_by(User.rating)
     user = UserSchema(many=True)
     output = user.dump(users)
     result = {
-        'Users' : output
+        'Users': output
     }
     return jsonify(result)
 
-@app.route("/users/<user_id>", methods=['GET'])
+
+@app.route('/notifications', methods=['GET'])
+def showNotifications():
+    notifications = Notification.query.filter(Notification.sender_id)
+    n = NotificationSchema(many=True)
+    output = n.dump(notifications)
+
+    result = {
+        'Notifications': output,
+    }
+
+    return jsonify(result)
+
+
+@app.route("/user/<user_id>", methods=['GET'])
 def profile(user_id):
     user = User.query.filter_by(id=user_id)
     #group = Groups.query.filter_by(group_id=id)
@@ -268,11 +310,12 @@ def profile(user_id):
     #output2 = g.dump(group)
     output3 = gM.dump(groupMem)
     result = {
-        'User':output
-        #'Group': output2,
-        #'GroupMem': output3
+        'User': output
+        # 'Group': output2,
+        # 'GroupMem': output3
     }
     return jsonify(result)
+
 
 @app.route("/projects/<id>", methods=['GET'])
 def groupsPage(id):
@@ -297,6 +340,7 @@ def groupsPage(id):
     }
     return jsonify(result)
 
+
 @app.route('/', methods=['GET'])
 def profilesAndGroups():
     users = User.query.order_by(User.rating).limit(3)
@@ -305,9 +349,9 @@ def profilesAndGroups():
     group = GroupSchema(many=True)
     output = user.dump(users)
     output2 = group.dump(groups)
-    
+
     result = {
-        'Users' : output,
+        'Users': output,
         'Groups': output2
     }
 
@@ -409,6 +453,7 @@ def account():
     image_file = url_for(
         'static', filename='client/src/components/ProfileImages/user.jpg')
 
+
 """
 # Deletes all rows from the following tables. BlackBox, BlackList, Groups, User, WhiteBox
 def delete_table_data():
@@ -419,9 +464,11 @@ def delete_table_data():
     db.session.query(Todo).delete()
     db.session.query(WhiteBox).delete()
     db.session.commit()
-
+"""
 
 # Populates rows in the following tables.
+
+"""
 def populate_table_data():
 
     # populate rows for user table.
@@ -551,16 +598,28 @@ def populate_table_data():
     db.session.add(todo2)
     db.session.add(todo3)
     db.session.add(todo4)
+    notification1 = Notification(
+        id=1, sender_id=2, recipient_id=3, body='Hello Frank')
+
+    notification2 = Notification(
+        id=2, sender_id=3, recipient_id=5, body='Hello Peter')
+
+    notification3 = Notification(
+        id=3, sender_id=2, recipient_id=4, body='Hello Henry')
+
+    db.session.add(notification1)
+    db.session.add(notification2)
+    db.session.add(notification3)
+
     # commit additions
     db.session.commit()
     print("Done")
 """
+
 if __name__ == '__main__':
     
     #delete_table_data()
     #populate_table_data()
     app.run(debug=True)
-    
-
 
    # socketIo.run(app)

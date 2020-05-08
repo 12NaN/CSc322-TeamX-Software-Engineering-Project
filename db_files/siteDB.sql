@@ -94,3 +94,11 @@ INSERT INTO
 	blacklist(user_name)
 VALUES
 ('bryare');
+
+INSERT INTO 
+	notification(id, group_id, sender_id, recipient_id, body)
+VALUES
+---(1,1,1,2,"Admin invited you to join Admin Group"),
+---(1,3,6,2,"Arun invited you to join Team A"),
+---(2,NULL, 10, 2, "Jie Wei has referenced you.");
+(3,NULL, 2,1, "Bryan has just registered." );
