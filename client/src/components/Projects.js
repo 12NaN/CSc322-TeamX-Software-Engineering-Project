@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
 import { getProjects} from './UserFunctions'
 import Cards from './Cards';
+import Create from './Groups/CreateGroups';
+import {Button} from 'react-bootstrap';
+import {Link} from 'react-router-dom';
 class Projects extends Component {
     constructor(){
         super();
@@ -26,6 +29,9 @@ class Projects extends Component {
         return (
             <div>
                 <h1 className="text-center">Projects</h1>
+                <Link to="/projects/create" className="btn btn-primary">Create a Group</Link>
+                <br/>
+                <br/>
                 <ul>{listItems}</ul>
             </div>
         );

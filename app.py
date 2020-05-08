@@ -92,6 +92,11 @@ class BlackList(db.Model):
 class Groups(db.Model):
     group_id = db.Column(db.Integer, primary_key=True)
     group_name = db.Column(db.String(20), nullable=False)
+    group_desc = db.Column(db.Text, nullable=False)
+    visi_posts = db.Column(db.Boolean, nullable=False)
+    visi_members = db.Column(db.Boolean, nullable=False)
+    visi_eval = db.Column(db.Boolean, nullable=False)
+    visi_warn = db.Column(db.Boolean, nullable=False)
     rating = db.Column(db.Integer, nullable=False)
 
     def __repr__(self):
@@ -179,7 +184,7 @@ class UserSchema(ma.SQLAlchemySchema):
 
 class GroupSchema(ma.SQLAlchemySchema):
     class Meta:
-        fields = ('group_id', 'group_name', 'rating')
+        fields = ('group_id', 'group_name', 'rating', 'group_desc', 'visi_posts', 'visi_members', 'visi_eval', 'visi_warn')
 
 
 class GroupMemSchema(ma.SQLAlchemySchema):
@@ -454,8 +459,9 @@ def account():
         'static', filename='client/src/components/ProfileImages/user.jpg')
 
 
-"""
+
 # Deletes all rows from the following tables. BlackBox, BlackList, Groups, User, WhiteBox
+"""
 def delete_table_data():
     db.session.query(BlackBox).delete()
     db.session.query(BlackList).delete()
@@ -515,13 +521,14 @@ def populate_table_data():
 
     # populate rows for groups.
     groups1 = Groups(
-        group_id=1, group_name='Team X', rating=20)
+        group_id=1, group_name='Team X', rating=20, group_desc="Good", visi_posts=True, visi_members=True, visi_eval=True, visi_warn=True)
+        #fields = ('group_id', 'group_name', 'rating', 'group_desc', 'visi_posts', 'visi_members', 'visi_eval', 'visi_warn')
 
     groups2 = Groups(
-        group_id=2, group_name='Team A', rating=0)
+        group_id=2, group_name='Team A', rating=0, group_desc="Bad", visi_posts=True, visi_members=False, visi_eval=False, visi_warn=True)
 
     groups3 = Groups(
-        group_id=3, group_name='Students', rating=0)
+        group_id=3, group_name='Students', rating=0, group_desc="Ugly", visi_posts=False, visi_members=False, visi_eval=False, visi_warn=False)
 
     gm2 = GroupMembers(group_id=1, user_id=2)
     gm3 = GroupMembers(group_id=1, user_id=3)
@@ -613,6 +620,7 @@ def populate_table_data():
 
     # commit additions
     db.session.commit()
+    
     print("Done")
 """
 
