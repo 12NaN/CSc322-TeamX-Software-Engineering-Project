@@ -26,19 +26,31 @@ class Projects extends Component {
         const listItems = this.state.groups.map((i) =>
             <Cards name={i["group_name"]} rating={i["rating"]} id={i["group_id"]}/>
         );
+       {if(localStorage.usertoken)
         return (
             <div>
                 <h1 className="text-center">Projects</h1>
                 <Link to="/projects/create" className="btn btn-primary" style={{"backgroundColor":"purple"}}>Create a Group</Link>
                 <br/>
                 <br/>
-                <Link to="/projects/create" className="btn btn-warning">Make a complaint</Link>
+                <Link to="/complaint" className="btn btn-warning">Make a complaint</Link>
 
                 <br/>
                 <br/>
                 <CardDeck>{listItems}</CardDeck>
             </div>
         );
+        else
+            return (
+                <div>
+                    <h1 className="text-center">Projects</h1>
+                    <Link to="/complaint" className="btn btn-warning">Make a complaint</Link>
+    
+                    <br/>
+                    <br/>
+                    <CardDeck>{listItems}</CardDeck>
+                </div>
+            );}
     }
 }
 

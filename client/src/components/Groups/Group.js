@@ -18,6 +18,11 @@ class Group extends Component {
             id: '',
             name: '',
             members: [],
+            desc: '',
+            visi_posts: false,
+            visi_members: false,
+            visi_eval: false,
+            visi_warn: false,
             rating: 0, 
             data: false
         }

@@ -186,8 +186,8 @@ class UserSchema(ma.SQLAlchemySchema):
 
 class GroupSchema(ma.SQLAlchemySchema):
     class Meta:
-        fields = ('group_id', 'group_name', 'rating', 'group_desc',
-                  'visi_posts', 'visi_members', 'visi_eval', 'visi_warn')
+        fields = ('group_id', 'group_name', 'group_desc',
+                  'visi_posts', 'visi_members', 'visi_eval', 'visi_warn', 'rating')
 
 
 class GroupMemSchema(ma.SQLAlchemySchema):
@@ -282,7 +282,42 @@ def groups():
         'Groups': output
     }
     return jsonify(result)
+@app.route('/projects/create', methods=['POST'])
+def create():
+    """
+    group_id = db.Column(db.Integer, primary_key=True)
+    group_name = db.Column(db.String(20), nullable=False)
+    group_desc = db.Column(db.Text, nullable=False)
+    visi_posts = db.Column(db.Boolean, nullable=False)
+    visi_members = db.Column(db.Boolean, nullable=False)
+    visi_eval = db.Column(db.Boolean, nullable=False)
+    visi_warn = db.Column(db.Boolean, nullable=False)
+    rating = db.Column(db.Integer, nullable=False)
 
+                group_name: this.state.name,
+            group_desc: this.state.desc,
+            visi_post: this.state.post,
+            visi_members: this.state.members,
+            visi_eval: this.state.eval,
+            visi_warn: this.state.warn,
+            rating: 0
+"""
+    group = GroupSchema(many=True)
+    name = request.json['group_name']
+    desc = request.json['group_desc']
+    posts = bool(request.json['visi_post'])
+    members = bool(request.json['visi_members'])
+    evaluate =  bool(request.json['visi_eval'])
+    warn = bool(request.json['visi_warn'])
+    rating = request.json['rating']
+    new_group = Groups(group_name=name, group_desc = desc, visi_posts = posts, visi_members = members, visi_eval = evaluate, visi_warn=warn, rating=rating)
+    db.session.add(new_group)
+    db.session.commit()
+
+    print("POSSSSSSSSSST")
+    result = group.dump(Groups.query.filter_by(group_name=name))
+    print(result)
+    return jsonify({'result': result})
 
 @app.route('/users', methods=['GET'])
 def profiles():
@@ -481,11 +516,11 @@ def delete_table_data():
     db.session.query(Todo).delete()
     db.session.query(WhiteBox).delete()
     db.session.commit()
-
+"""
 
 # Populates rows in the following tables.
 
-
+"""
 def populate_table_data():
 
     # populate rows for user table.
@@ -637,8 +672,8 @@ def populate_table_data():
 
 if __name__ == '__main__':
 
-    # delete_table_data()
-    # populate_table_data()
+    #delete_table_data()
+    #populate_table_data()
     app.run(debug=True)
 
    # socketIo.run(app)
