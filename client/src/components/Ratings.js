@@ -13,7 +13,9 @@ class Ratings extends Component {
     return (
       <div>
       <Box component="fieldset" mb={3} borderColor="transparent">
-        <Rating name="read-only" value={this.props.rating} readOnly />
+        <Rating name="read-only" value={this.props.rating / 6} readOnly />
+        <br/>
+        {this.props.rating}
       </Box>
     </div>
     );

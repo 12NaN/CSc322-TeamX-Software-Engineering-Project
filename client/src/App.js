@@ -11,6 +11,9 @@ import Profile from './components/Profile'
 import userPage from './components/userPage'
 import Group from './components/Groups/Group'
 import Notifications from './components/Notifications'
+import CreateGroups from './components/Groups/CreateGroups.js'
+import AddMembersList from './components/Groups/AddMembersList'
+import Complaints from './components/Complaints'
 
 class App extends Component {
   render() {
@@ -29,6 +32,9 @@ class App extends Component {
             <Route exact path="/notifications" component={Notifications} />
             <Route exact path="/users/:id" component={userPage} />
             <Route exact path="/group" component={Group} />
+            <Route exact path="/projects/create" component={CreateGroups}/>
+            <Route exact path="/projects/create/addMembers" component={AddMembersList}/>
+            <Route exact path="/complaint" component={Complaints}/>
           </div>
         </div>
       </Router>

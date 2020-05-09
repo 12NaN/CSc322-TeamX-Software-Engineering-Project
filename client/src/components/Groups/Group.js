@@ -10,7 +10,7 @@ import Posts from './Posts';
 import image from '../ProfileImages/user.png';
 import axios from 'axios'
 import Form from './Forms';
-
+import {CardDeck} from 'react-bootstrap';
 class Group extends Component {
     constructor(props){
         super(props);
@@ -33,8 +33,13 @@ class Group extends Component {
             console.log(response.data['Group'][0]["group_name"])
             this.setState({
                 id: response.data['Group'][0]["group_id"],
+                desc: response.data['Group'][0]["group_desc"],
                 name: response.data['Group'][0]["group_name"],
-                rating: response.data['Group'][0]["rating"]
+                rating: response.data['Group'][0]["rating"],
+                visi_posts: response.data['Group'][0]["visi_posts"],
+                visi_members: response.data['Group'][0]["visi_members"],
+                visi_eval: response.data['Group'][0]["visi_eval"],
+                visi_warn: response.data['Group'][0]["visi_warn"]
             })
             console.log(response.data['Group'][0])
             
@@ -42,7 +47,11 @@ class Group extends Component {
             let k = []
             for(let i = 0; i < response.data['Users'].length; i++){
                 if(j < response.data['GroupMembers'].length && response.data['GroupMembers'][j]["user_id"] == response.data['Users'][i]["id"]){
-                    k.push(response.data['Users'][i]["user_name"])                    
+                    k.push({
+                        "id": response.data['Users'][i]["id"],
+                        "user_name": response.data['Users'][i]["user_name"],
+                        "rating": response.data['Users'][i]["rating"]
+                    })                    
                    //console.log(response.data['Users'][i]["id"])
                     j++;
                 }
@@ -65,18 +74,19 @@ class Group extends Component {
                 <img src={image} className="center" style={{height:"200px", width:"200px"}}/>
                 <h1 id="groupName">{this.state.name}</h1>
                 <Ratings rating={this.state.rating}/>
+                <h3>Description: {this.state.desc}</h3>
                 <hr></hr>
-                <Sections sectionName="Posts" component={<Form group = {this.state.id} user = {1}/>}/>
+                <Sections sectionName="Posts" privacy={this.state.visi_posts} component={<Form group = {this.state.id} user = {1}/>}/>
                 <hr></hr>
-                <Sections sectionName="Members" component={<Members members={this.state.members}/>}/>
+                <Sections sectionName="Members" privacy={this.state.visi_members} component={<Members members={this.state.members}/>}/>
                 <hr></hr>
-                <Sections sectionName="Tasks" component={<Todo/>}/>
+                <Sections sectionName="Tasks" privacy={this.state.visi_posts} component={<Todo/>}/>
                 <hr></hr>
-                <Sections sectionName="Poll" component={<Poll groupID= {this.state.id}/>}/>
+                <Sections sectionName="Poll" privacy={this.state.visi_posts} component={<Poll groupID= {this.state.id}/>}/>
                 <hr></hr>
-                <Sections sectionName="Evaluations" component={<Evaluations/>}/>
+                <Sections sectionName="Evaluations" privacy={this.state.visi_eval} component={<Evaluations/>}/>
                 <hr></hr>
-                <Sections sectionName="Warnings" component={<Warnings/>}/>
+                <Sections sectionName="Warnings" privacy={this.state.visi_warn} component={<Warnings/>}/>
             </div>
         );
     }

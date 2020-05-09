@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import {Card} from 'react-bootstrap';
 import Bryan from './ProfileImages/user.png';
+import { LetterAvatars } from './Groups/LetterAvatars';
 import {Link} from 'react-router-dom';
+import Ratings from './Ratings';
 class Cards extends Component {
     constructor(props){
         super(props);
@@ -22,17 +24,25 @@ class Cards extends Component {
         
         return (
             <div>
-                <Card style={{ width: '18rem' }}>
-                    <Card.Img variant="top" src= {Bryan} style={{width:'250px'}}/>
+                <Card>
+                    <Card.Img variant="top" src={''} />
                     <Card.Body>
-                        <Card.Title>{this.state.name}</Card.Title>
+                    <Card.Title>{this.state.name}</Card.Title>
                         <Card.Text>
-                            {this.state.rating}
+                            <Ratings rating={this.state.rating}/>
                         </Card.Text>
-                        <Link to={this.props.type == "user" ? "/users/"+ this.props.id: "/projects/" + this.props.id}>
-                            View Page
-                        </Link>
+                    {/*
+                    <Card.Text>
+                        This is a wider card with supporting text below as a natural lead-in to
+                        additional content. This content is a little bit longer.
+                    </Card.Text>
+                    */}
                     </Card.Body>
+                    <Card.Footer>
+                    <Link to={this.props.type == "user" ? "/users/"+ this.props.id: "/projects/" + this.props.id}>
+                            View Page
+                    </Link>                 
+                    </Card.Footer>
                 </Card>
             </div>
         );

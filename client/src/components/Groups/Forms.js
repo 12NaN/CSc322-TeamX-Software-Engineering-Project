@@ -105,7 +105,7 @@ class Forms extends Component {
           <Form.Label>Content</Form.Label>
           <Form.Control as="textarea" rows="5" value={this.state.content} />
       </Form.Group>
-      <Button variant="primary" type="submit">
+      <Button variant="secondary" style={{"backgroundColor": "purple"}} type="submit">
         Submit
     </Button>
       </Form>

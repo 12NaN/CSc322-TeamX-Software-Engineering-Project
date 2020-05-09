@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
 import { getProfiles} from './UserFunctions'
+import {Link} from 'react-router-dom';
 import Cards from './Cards';
+import {CardDeck} from 'react-bootstrap';
+
 class Users extends Component {
     constructor(){
         super();
@@ -26,7 +29,10 @@ class Users extends Component {
         return (
             <div>
                 <h1 className="text-center">Users</h1>
-                <ul>{listItems}</ul>
+                <Link to="/complaint" className="btn btn-warning">Make a complaint</Link>
+                <br/>
+                <br/>
+                <CardDeck>{listItems}</CardDeck>
             </div>
         );
     }

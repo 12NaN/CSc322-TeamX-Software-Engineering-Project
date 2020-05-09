@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-
+import Cards from '../Cards';
+import {Card, CardDeck} from 'react-bootstrap';
 class Members extends Component {
     constructor(props){
         super(props);
@@ -14,12 +15,12 @@ class Members extends Component {
     }
     render() {
         const listItems = this.state.members.map((i) =>
-            <li>{i}</li>
+            <Cards name={i["user_name"]} id={i["id"]} rating={i["rating"]} type={"user"}/>
         );
         return (
             <div>
                 <h1>Members</h1>
-                <ul>{listItems}</ul>
+                <CardDeck>{listItems}</CardDeck>
             </div>
         );
     }
