@@ -14,6 +14,7 @@ class Profile extends Component {
       email: '',
       rating: 0,
       image: '',
+      interest: '',
       user_type:'',
       errors: {}
     }
@@ -28,6 +29,7 @@ class Profile extends Component {
       first_name: decoded.identity.first_name,
       last_name: decoded.identity.last_name,
       rating: decoded.identity.rating,
+      interest: decoded.identity.interest,
       image: decoded.identity.image_file,
       email: decoded.identity.email
     })
@@ -58,6 +60,10 @@ class Profile extends Component {
               <tr>
                 <td>Email</td>
                 <td>{this.state.email}</td>
+              </tr>
+              <tr>
+                <td>Interest</td>
+                <td>{this.state.interest}</td>
               </tr>
               <tr>
                 <td>Rating</td>

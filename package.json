@@ -2,6 +2,13 @@
   "name": "teamXSoftwareEngineeringProject",
   "version": "1.0.0",
   "description": "",
+  "build": {
+    "appId": "react.electron",
+    "win":
+    {
+      "icon": "build/icon.png"
+    }
+  },
   "main": "Main.js",
   "scripts": {
     "start": "electron .",
@@ -14,6 +21,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+
   "bugs": {
     "url": "https://github.com/12NaN/CSc322-TeamX-Software-Engineering-Project/issues"
   },

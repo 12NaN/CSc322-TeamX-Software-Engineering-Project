@@ -29,7 +29,7 @@ class Users extends Component {
         return (
             <div>
                 <h1 className="text-center">Users</h1>
-                <Link to="/projects/create" className="btn btn-warning">Make a complaint</Link>
+                <Link to="/complaint" className="btn btn-warning">Make a complaint</Link>
                 <br/>
                 <br/>
                 <CardDeck>{listItems}</CardDeck>
