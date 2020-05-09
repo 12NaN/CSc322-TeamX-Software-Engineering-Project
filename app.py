@@ -131,7 +131,8 @@ class Post(db.Model):
                             default=datetime.utcnow)
     content = db.Column(db.Text, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    group_id = db.Column(db.Integer, db.ForeignKey('groups.group_id'), nullable=False)
+    group_id = db.Column(db.Integer, db.ForeignKey(
+        'groups.group_id'), nullable=False)
 
     def __repr__(self):
         return f"Post('{self.title}', '{self.content}', '{self.user_id}', '{self.group_id}')"
@@ -161,6 +162,7 @@ class Results(db.Model):
     id = db.Column('id', db.Integer, primary_key=True)
     vote = db.Column('data', db.Integer)
 
+
 class Todo(db.Model):
     __tablename__ = 'todo'
     id = db.Column('id', db.Integer, primary_key=True)
@@ -185,6 +187,8 @@ class GroupSchema(ma.SQLAlchemySchema):
 class GroupMemSchema(ma.SQLAlchemySchema):
     class Meta:
         fields = ('group_id', 'user_id')
+
+
 class PostSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         fields = ('title', 'content', 'user_id', 'group_id')
@@ -333,8 +337,8 @@ def groupsPage(id):
     output3 = u.dump(users)
     output4 = p.dump(posts)
     result = {
-        'Group':output,
-        'GroupMembers':output2,
+        'Group': output,
+        'GroupMembers': output2,
         'Users': output3,
         'Posts': output4
     }
@@ -369,7 +373,7 @@ def login():
 
     if user and bcrypt.check_password_hash(user.password, password):
         access_token = create_access_token(identity={
-                                           'first_name': user.first_name, 'last_name': user.last_name, 'email': user.email})
+                                           'first_name': user.first_name, 'last_name': user.last_name, 'email': user.email, 'id': user.id})
         result = access_token
     else:
         result = jsonify({"error": "Invalid username and password"})
@@ -387,16 +391,18 @@ def removeTodo(group_id, item_id):
 
     # endpoint for updating todo item
 
+
 @app.route('/projects/<group_id>', methods=['GET'])
 def getTodo(group_id):
     todo = Todo.query.filter_by(group_id=group_id)
     to = todoSchema(many=True)
     output = to.dump(todo)
-    
+
     result = {
-        'Todo' : output
+        'Todo': output
     }
     return result
+
 
 @app.route('/projects/<group_id>', methods=['POST'])
 def posts(group_id):
@@ -404,10 +410,10 @@ def posts(group_id):
     post = PostSchema()
     taboo = open('taboo.txt', 'r')
     title = request.json['title']
-    content = request.json['content']   
+    content = request.json['content']
     for line in taboo:
         stripped_line = line.strip()
-        #print(stripped_line)
+        # print(stripped_line)
         if stripped_line in title:
             print(stripped_line)
             title = title.replace(stripped_line, '*'*len(stripped_line))
@@ -418,18 +424,21 @@ def posts(group_id):
 #    date = request.json['date_posted']
     user = request.json['user_id']
     group = request.json['group_id']
-    new_post = Post(title = title, content = content, user_id = user, group_id = group)
+    new_post = Post(title=title, content=content, user_id=user, group_id=group)
     db.session.add(new_post)
     db.session.commit()
- 
+
     print("POSSSSSSSSSST")
     result = post.dump(Post.query.filter_by(group_id=group_id))
     print(result)
     return jsonify({'result': result})
-@app.route('/projects/<group_id>', methods = ['POST'])
+
+
+@app.route('/projects/<group_id>', methods=['POST'])
 def addTodo():
-    data = json.loads(request.data) # load JSON data from request
-    pusher.trigger('room', 'item-added', data) # trigger `item-added` event on `todo` channel
+    data = json.loads(request.data)  # load JSON data from request
+    # trigger `item-added` event on `todo` channel
+    pusher.trigger('room', 'item-added', data)
     return jsonify(data)
 # This route redirects the updateToDo function to be used at the group page
 
@@ -440,7 +449,7 @@ def updateTodo(group_id):
         'id': item_id,
         'completed': json.loads(request.data).get('completed', 0)
     }
-    #'private-'+str(group_id)
+    # 'private-'+str(group_id)
     pusher.trigger("room", 'item-updated', data)
     print("pushed")
     return jsonify(data)
@@ -460,15 +469,17 @@ def delete_table_data():
     db.session.query(BlackBox).delete()
     db.session.query(BlackList).delete()
     db.session.query(Groups).delete()
+    db.session.query(GroupMembers).delete()
+    db.session.query(Notification).delete()
     db.session.query(User).delete()
     db.session.query(Todo).delete()
     db.session.query(WhiteBox).delete()
     db.session.commit()
-"""
+
 
 # Populates rows in the following tables.
 
-"""
+
 def populate_table_data():
 
     # populate rows for user table.
@@ -547,10 +558,10 @@ def populate_table_data():
     whitebox1 = WhiteBox(
         user_id=1, whtbxd_prsn_id=5, group_id=0)
 
-    todo1 = Todo(id=1, text="Get em",user_id=9,status=0,group_id=3)
-    todo2 = Todo(id=2, text="Rule",user_id=8,status=1,group_id=3)
-    todo3 = Todo(id=3, text="Buy food",user_id=6,status=1,group_id=2)
-    todo4 = Todo(id=4, text="Buy food again",user_id=2,status=0,group_id=1)
+    todo1 = Todo(id=1, text="Get em", user_id=9, status=0, group_id=3)
+    todo2 = Todo(id=2, text="Rule", user_id=8, status=1, group_id=3)
+    todo3 = Todo(id=3, text="Buy food", user_id=6, status=1, group_id=2)
+    todo4 = Todo(id=4, text="Buy food again", user_id=2, status=0, group_id=1)
     # add users and relations
     db.session.add(admin)
 
@@ -617,9 +628,9 @@ def populate_table_data():
 """
 
 if __name__ == '__main__':
-    
-    #delete_table_data()
-    #populate_table_data()
+
+    # delete_table_data()
+    # populate_table_data()
     app.run(debug=True)
 
    # socketIo.run(app)
