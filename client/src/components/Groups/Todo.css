@@ -1,11 +1,11 @@
 .todo-container {
-    background: rgb(41, 33, 33);
+    background: grey;
     width: 40vw;
     margin: 10em auto;
     border-radius: 15px;
     padding: 20px 10px;
     color: white;
-    border: 3px solid rgb(36, 110, 194);
+    border: 3px solid purple;
   }
 
   .task {
@@ -16,7 +16,7 @@
   }
 
   .task button{
-    background: rgb(12, 124, 251);
+    background: purple;
     border-radius: 5px;
     margin: 0px 5px;
     padding: 3px 5px;

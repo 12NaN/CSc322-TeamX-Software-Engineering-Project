@@ -303,7 +303,7 @@ def showNotifications():
     return jsonify(result)
 
 
-@app.route("/user/<user_id>", methods=['GET'])
+@app.route("/users/<user_id>", methods=['GET'])
 def profile(user_id):
     user = User.query.filter_by(id=user_id)
     #group = Groups.query.filter_by(group_id=id)
@@ -373,8 +373,8 @@ def login():
     user = User.query.filter_by(email=str(email)).first()
 
     if user and bcrypt.check_password_hash(user.password, password):
-        access_token = create_access_token(identity={
-                                           'first_name': user.first_name, 'last_name': user.last_name, 'email': user.email})
+        access_token = create_access_token(identity={'id': user.id,'user_name': user.user_name,
+                                           'first_name': user.first_name, 'last_name': user.last_name, 'email': user.email, 'rating': user.rating})
         result = access_token
     else:
         result = jsonify({"error": "Invalid username and password"})

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { getProjects} from './UserFunctions'
 import Cards from './Cards';
 import Create from './Groups/CreateGroups';
-import {Button} from 'react-bootstrap';
+import {Button, CardDeck} from 'react-bootstrap';
 import {Link} from 'react-router-dom';
 class Projects extends Component {
     constructor(){
@@ -29,10 +29,14 @@ class Projects extends Component {
         return (
             <div>
                 <h1 className="text-center">Projects</h1>
-                <Link to="/projects/create" className="btn btn-primary">Create a Group</Link>
+                <Link to="/projects/create" className="btn btn-primary" style={{"backgroundColor":"purple"}}>Create a Group</Link>
                 <br/>
                 <br/>
-                <ul>{listItems}</ul>
+                <Link to="/projects/create" className="btn btn-warning">Make a complaint</Link>
+
+                <br/>
+                <br/>
+                <CardDeck>{listItems}</CardDeck>
             </div>
         );
     }

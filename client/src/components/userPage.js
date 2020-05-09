@@ -25,7 +25,8 @@ class Profile extends Component {
             user_name: response.data['User'][0]["user_name"],
             email: response.data['User'][0]["email"],
             interest: response.data['User'][0]['interest'],
-            rating: response.data['User'][0]['rating']
+            rating: response.data['User'][0]['rating'],
+            user_type: this.state.rating > 30 ? "VIP" : "Ordinary User"
         })
         
         return response.data
@@ -67,6 +68,10 @@ class Profile extends Component {
               <tr>
                 <td>Rating</td>
                 <td>{<Rating rating={this.state.rating}/>}</td>
+              </tr>
+              <tr>
+                <td>User Type</td>
+                <td>{this.state.user_type}</td>
               </tr>
             </tbody>
           </table>

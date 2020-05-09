@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
-import {Card, Button} from 'react-bootstrap';
+import Cards from '../Cards';
+import {Link} from 'react-router-dom';
+import {Card, CardDeck, Button} from 'react-bootstrap';
 import axios from 'axios';
 class AddMembersList extends Component {
     constructor(){
@@ -20,21 +22,18 @@ class AddMembersList extends Component {
     render() {
         let members = this.state.users.map((i) =>
         <div>
-            <Card.Header>{i['user_name']}</Card.Header>
-            <Card.Body>
-                <blockquote className="blockquote mb-0">
-                <Button>Invite</Button>
-                </blockquote>
-            </Card.Body>
-            <br/>
+            <Cards name={i["user_name"]} rating={i["rating"]} id={i["id"]} type={"user"}/>
+            <Link to={""}>
+                Invite
+            </Link>   
         </div>
         );
         return (
             <div>
                 <h1>Invite Group Members</h1>
-                <Card>
+                <CardDeck>
                     {members}
-                </Card>
+                </CardDeck>
             </div>
         );
     }
