@@ -58,7 +58,7 @@ class User(db.Model):
         return User.query.get(user_id)
 
     def __repr__(self):
-        return f"User('{self.user_name}', '{self.email}', '{self.image_file}')"
+        return f"User('{self.user_name}', '{self.email}', '{self.image_file}','{self.rating}')" # String representation of a query
 
 # This class creates the BlackBox table in SQLITE
 
@@ -452,24 +452,37 @@ def posts(group_id):
     taboo = open('taboo.txt', 'r')
     title = request.json['title']
     content = request.json['content']
+
+    reduce_points = 0 # Amount of points to reduce if taboo word is found
+    penalty = 5 # Number of points to reduce if a taboo word is found within the title or content
     for line in taboo:
         stripped_line = line.strip()
         # print(stripped_line)
         if stripped_line in title:
+            reduce_points -= penalty# Reduce points if taboo is in title
             print(stripped_line)
             title = title.replace(stripped_line, '*'*len(stripped_line))
         if stripped_line in content:
+            reduce_points -= penalty # Reduce Reduce points if taboo is in content
             print(stripped_line)
             content = content.replace(stripped_line, '*'*len(stripped_line))
     taboo.close()
-#    date = request.json['date_posted']
     user = request.json['user_id']
     group = request.json['group_id']
+
+    if reduce_points != 0: # If the reduction_points is < 0, then reduce the necessary points to the user who used the taboo words
+        modify_user = User.query.get_or_404(user) # Might need exception handling
+        print("BEFORE",modify_user) ## Debugging 
+        db.session.query(User).filter(User.id == user).update({User.rating: User.rating + reduce_points}) # Querying for the user data and updating
+        print("AFTER",modify_user) ## Debugging 
+
+#    date = request.json['date_posted']
+
     new_post = Post(title=title, content=content, user_id=user, group_id=group)
     db.session.add(new_post)
     db.session.commit()
 
-    print("POSSSSSSSSSST")
+    print("Post_Added")
     result = post.dump(Post.query.filter_by(group_id=group_id))
     print(result)
     return jsonify({'result': result})
@@ -496,7 +509,6 @@ def updateTodo(group_id):
     return jsonify(data)
 
 # This route redirects the account function to be used at the profile page
-
 
 @app.route("/profile")
 def account():
