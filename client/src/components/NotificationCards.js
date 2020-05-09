@@ -10,22 +10,33 @@ class NotificationCards extends Component {
             sender_id: 0,
             recipient_id: 0,
             body: '',
+            user_id: 0,
+            isToggleOn: false,
             dataFetched: false
         }
 
+        this.onApprove = this.onApprove.bind(this);
     }
+
     componentDidMount() {
         const token = localStorage.usertoken
         const decoded = jwt_decode(token)
-
         this.setState({
             id: this.props.id,
             sender_id: this.props.sender_id,
             recipient_id: this.props.recipient_id,
             body: this.props.body,
+            user_id: decoded.identity.id,
 
         })
     }
+
+    onApprove() {
+        this.setState(state => ({
+            isToggleOn: !state.isToggleOn
+        }));
+    }
+
     render() {
         const isInvite = this.state.id;
 
@@ -39,7 +50,8 @@ class NotificationCards extends Component {
             button = <button style={{ float: "right" }}>Rate</button>
         }
         if (isInvite == 3) {
-            button = <button style={{ float: "right" }}>Approve</button>
+            button = <button onClick={this.onApprove} style={{ float: "right" }}>{this.state.isToggleOn ? 'ON' : 'OFF'}</button>
+
             button2 = <button style={{ float: "right" }}>Deny</button>
         }
 
@@ -54,25 +66,29 @@ class NotificationCards extends Component {
         if (type == 3) {
             type_name = "Register Visitor"
         }
-        return (
-            <div>
-                <Card style={{ width: '50rem' }} >
-                    <Card.Img variant="top" style={{ width: '250px' }} />
-                    <Card.Body  >
+        const user = this.state.user_id;
+        const rec = this.state.recipient_id;
+        if (user == rec)
+            return (
+                <div>
+                    <Card style={{ width: '50rem' }} >
+                        <Card.Img variant="top" style={{ width: '250px' }} />
+                        <Card.Body  >
 
-                        <Card.Title >{type_name}</Card.Title>
-                        <Card.Text >
-                            {this.state.body}
-                            <div>
-                                {button}
-                                {button2}
-                            </div>
-                        </Card.Text>
+                            <Card.Title >{type_name}</Card.Title>
+                            <Card.Text >
+                                {this.state.body}
+                                <div>
+                                    {button}
+                                    {button2}
+                                </div>
+                            </Card.Text>
 
-                    </Card.Body>
-                </Card>
-            </div>
-        );
+                        </Card.Body>
+                    </Card>
+                </div>
+            );
+
     }
 }
 
