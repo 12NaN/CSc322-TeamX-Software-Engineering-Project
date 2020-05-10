@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import ReactDOM from "react-dom";
 
-
 class PollForm extends Component {
   state = {
     polls: [{ date: "", startTime: "", endTime: "" }],
@@ -30,19 +29,12 @@ class PollForm extends Component {
   }
   handleSubmit = e => {
     e.preventDefault();
-    const poll_obj = {
-      description = this.state.description,
-      polls = this.state.polls
-    }
-
-    CreatePoll(poll_obj).then(res => {
-    this.props.history.push(`/poll`)
-    })
-  };
+  }
   render() {
     
     let { description, polls } = this.state;
     return (
+
       <form onSubmit={this.handleSubmit} onChange={this.handleChange}>
         
         <label htmlFor="description">Description: </label>
@@ -52,17 +44,18 @@ class PollForm extends Component {
           name="description"
           id="description"
           value={description}
+          class="form-control " rows="3"
         />
-        &nbsp;
-        <button onClick={this.addpoll}>Add New Option</button>
+        <button onClick={this.addpoll} style={{"backgroundColor": "purple"}} className="btn btn-dark">Add New Option</button>
         <br/><br/>
         {polls.map((val, idx) => {
           let pollid = `poll-${idx}`,
             startTimeId = `startTime-${idx}`,
             endTimeId = `endTime-${idx}`;
           return (
-            <div key={idx}>
-              <label htmlFor={pollid}>{`Poll Option ${idx + 1}`}: </label>
+            <div key={idx} class="form-group row">
+              <div class="col-3">
+                <label htmlFor={pollid}>{`Poll Option ${idx + 1}`}: </label>
               <input
                 type="date"
                 name={pollid}
@@ -70,10 +63,11 @@ class PollForm extends Component {
                 id={pollid}
                 value={polls[idx].date}
                 className="date"
-                
+   
               />
+              </div>
               
-              &nbsp;
+              <div class="col-2">
               <label htmlFor={startTimeId}>Start Time</label>
               <input
                 type="time"
@@ -82,8 +76,10 @@ class PollForm extends Component {
                 id={startTimeId}
                 value={polls[idx].startTime}
                 className="startTime"
+                
               />
-              &nbsp;
+              </div>
+              <div class="col-2">
               <label htmlFor={endTimeId}>End Time </label>
               <input
                 type="time"
@@ -92,14 +88,16 @@ class PollForm extends Component {
                 id={endTimeId}
                 value={polls[idx].endTime}
                 className="endTime"
+              
               />
-             &nbsp;
-              <button onClick={() => this.detetePoll(idx)}> - </button>
-              <br/><br/>
+              </div>
+             <div class="col">              
+              <button onClick={() => this.detetePoll(idx)} style={{"backgroundColor": "purple"}} className="btn btn-dark"> - </button>
+              </div>
             </div>
           );
         })}
-        <input type="submit" value="Submit" />
+        <input type="submit" value="Submit"  style={{"backgroundColor": "purple"}} className="btn btn-dark"/>
       </form>
     );
   }

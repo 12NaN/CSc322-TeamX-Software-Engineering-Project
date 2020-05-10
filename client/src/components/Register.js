@@ -128,6 +128,7 @@ class Register extends Component {
               </div>
               <button
                 type="submit"
+                style={{"backgroundColor":"purple"}}
                 className="btn btn-lg btn-primary btn-block"
               >
                 Register!

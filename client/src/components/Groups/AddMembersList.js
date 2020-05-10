@@ -11,6 +11,7 @@ class AddMembersList extends Component {
             members: []
         }
     }
+
     componentDidMount(){
         axios.get('/users')
         .then((response)=>{
@@ -34,6 +35,8 @@ class AddMembersList extends Component {
                 <CardDeck>
                     {members}
                 </CardDeck>
+
+                <Link to={'/projects'} className="btn btn-primary">Go to group page</Link>
             </div>
         );
     }

@@ -73,7 +73,7 @@ class User(db.Model):
         return User.query.get(user_id)
 
     def __repr__(self):
-        return f"User('{self.user_name}', '{self.email}', '{self.image_file}')"
+        return f"User('{self.user_name}', '{self.email}', '{self.image_file}','{self.rating}')" # String representation of a query
 
 # This class creates the BlackBox table in SQLITE
 
@@ -87,7 +87,7 @@ class BlackBox(db.Model):
         'groups.group_id', ondelete="CASCADE"))
 
     def __repr__(self):
-        return f"BlackBox('{self.user_id}')"
+        return f"BlackBox('{self.user_id}','{self.blkbxd_prsn_id}','{self.group_id}')"
 
 # This class creates the BlackList table in SQLITE
 
@@ -99,7 +99,7 @@ class BlackList(db.Model):
         'user.user_name'))
 
     def __repr__(self):
-        return f"BlackList('{self.user_id}')"
+        return f"BlackList('{self.user_id}', {self.user_name})"
 
 # This class creates the Groups table in SQLITE
 
@@ -155,7 +155,7 @@ class Post(db.Model):
         'groups.group_id'), nullable=False)
 
     def __repr__(self):
-        return f"Post('{self.title}', '{self.content}', '{self.user_id}', '{self.group_id}')"
+        return f"Post('{self.title}', '{self.content}', '{self.user_id}', '{self.group_id}, '{self.date_posted}')"
 
 # This class creates the User table in SQLITE
 
@@ -172,7 +172,7 @@ class WhiteBox(db.Model):
         'groups.group_id', ondelete="CASCADE"))
 
     def __repr__(self):
-        return f"WhiteBox('{self.user_id}')"
+        return f"WhiteBox('{self.user_id}','{self.whtbxd_prsn_id}','{self.group_id}')"
 
 # This class creates the Results table in SQLITE
 
@@ -201,8 +201,8 @@ class UserSchema(ma.SQLAlchemySchema):
 
 class GroupSchema(ma.SQLAlchemySchema):
     class Meta:
-        fields = ('group_id', 'group_name', 'rating', 'group_desc',
-                  'visi_posts', 'visi_members', 'visi_eval', 'visi_warn')
+        fields = ('group_id', 'group_name', 'group_desc',
+                  'visi_posts', 'visi_members', 'visi_eval', 'visi_warn', 'rating')
 
 
 class GroupMemSchema(ma.SQLAlchemySchema):
@@ -212,13 +212,26 @@ class GroupMemSchema(ma.SQLAlchemySchema):
 
 class PostSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
-        fields = ('title', 'content', 'user_id', 'group_id')
+        fields = ('title', 'date_posted', 'content', 'user_id', 'group_id')
 
 
 class NotificationSchema(ma.SQLAlchemySchema):
     class Meta:
         fields = ('id', 'sender_id', 'recipient_id', 'body')
 
+
+class BlackBoxSchema(ma.SQLAlchemySchema):
+    class Meta:
+        fields = ('user_id','blkbxd_prsn_id','group_id')
+
+
+class WhiteBoxSchema(ma.SQLAlchemySchema):
+    class Meta:
+        fields = ('group_id','whtbxd_prsn_id','group_id')
+# Used to get blacklisted users
+class BlackListSchema(ma.SQLAlchemySchema):
+    class Meta:
+        fields = ('user_id','user_name')
 
 app.config['JWT_SECRET_KEY'] = 'secret'
 # socketIo = SocketIO(app, cors_allowed_origins="*")
@@ -265,9 +278,20 @@ def register():
     user_type = 0
     rating = 0
 
-  #  created = datetime.utcnow()
+    #  created = datetime.utcnow()
+    
+    # Getting the rows within the black_list table
+    find_user = BlackListSchema(many=True)
+    banned_list = find_user.dump(BlackList.query.filter_by(user_name=user_name))
+    # Getting the blacklisted user_names and storing them in a list
+    banned_users = [each_user['user_name'] for each_user in banned_list] 
 
-    user = User(user_name=user_name, first_name=first_name, last_name=last_name, email=email,
+    # Checking if the filled out user name is within the black listed user_names
+    if (user_name in banned_users):
+        print("CURRENT_USER:",user_name,"HAS BEEN BLACK LISTED!")
+        return jsonify({'result': None}) # Not sure what to return when a user is black listed, but this works without any erorrs...
+    else: # The user_name is not black listed and is added to the database
+        user = User(user_name=user_name, first_name=first_name, last_name=last_name, email=email,
                 password=password, interest=interest, references=references, user_type=user_type, rating=rating)  # , created=created)
 
     notification = Notification(
@@ -277,7 +301,7 @@ def register():
     db.session.add(notification)
     db.session.commit()
 
-    result = {
+        result = {
         'user_name': user_name,
         'first_name': first_name,
         'last_name': last_name,
@@ -288,9 +312,9 @@ def register():
         'user_type': user_type,
         'rating': rating,
 
-    }
-
-    return jsonify({'result': result})
+        }
+        print("ACCUNT CREATED:\n",result)
+        return jsonify({'result':result})
 
 
 @app.route('/projects', methods=['GET'])
@@ -302,7 +326,42 @@ def groups():
         'Groups': output
     }
     return jsonify(result)
+@app.route('/projects/create', methods=['POST'])
+def create():
+    """
+    group_id = db.Column(db.Integer, primary_key=True)
+    group_name = db.Column(db.String(20), nullable=False)
+    group_desc = db.Column(db.Text, nullable=False)
+    visi_posts = db.Column(db.Boolean, nullable=False)
+    visi_members = db.Column(db.Boolean, nullable=False)
+    visi_eval = db.Column(db.Boolean, nullable=False)
+    visi_warn = db.Column(db.Boolean, nullable=False)
+    rating = db.Column(db.Integer, nullable=False)
 
+                group_name: this.state.name,
+            group_desc: this.state.desc,
+            visi_post: this.state.post,
+            visi_members: this.state.members,
+            visi_eval: this.state.eval,
+            visi_warn: this.state.warn,
+            rating: 0
+"""
+    group = GroupSchema(many=True)
+    name = request.json['group_name']
+    desc = request.json['group_desc']
+    posts = bool(request.json['visi_post'])
+    members = bool(request.json['visi_members'])
+    evaluate =  bool(request.json['visi_eval'])
+    warn = bool(request.json['visi_warn'])
+    rating = request.json['rating']
+    new_group = Groups(group_name=name, group_desc = desc, visi_posts = posts, visi_members = members, visi_eval = evaluate, visi_warn=warn, rating=rating)
+    db.session.add(new_group)
+    db.session.commit()
+
+    print("POSSSSSSSSSST")
+    result = group.dump(Groups.query.filter_by(group_name=name))
+    print(result)
+    return jsonify({'result': result})
 
 @app.route('/users', methods=['GET'])
 def profiles():
@@ -437,24 +496,38 @@ def posts(group_id):
     taboo = open('taboo.txt', 'r')
     title = request.json['title']
     content = request.json['content']
+    date_posted = datetime.strptime(request.json['date_posted'], "%a, %d %b %Y %H:%M:%S %Z")
+    print(date_posted)
+    reduce_points = 0 # Amount of points to reduce if taboo word is found
+    penalty = 5 # Number of points to reduce if a taboo word is found within the title or content
     for line in taboo:
         stripped_line = line.strip()
         # print(stripped_line)
         if stripped_line in title:
+            reduce_points -= penalty# Reduce points if taboo is in title
             print(stripped_line)
             title = title.replace(stripped_line, '*'*len(stripped_line))
         if stripped_line in content:
+            reduce_points -= penalty # Reduce Reduce points if taboo is in content
             print(stripped_line)
             content = content.replace(stripped_line, '*'*len(stripped_line))
     taboo.close()
-#    date = request.json['date_posted']
     user = request.json['user_id']
     group = request.json['group_id']
-    new_post = Post(title=title, content=content, user_id=user, group_id=group)
+
+    if reduce_points != 0: # If the reduction_points is < 0, then reduce the necessary points to the user who used the taboo words
+        modify_user = User.query.get_or_404(user) # Might need exception handling
+        print("BEFORE",modify_user) ## Debugging 
+        db.session.query(User).filter(User.id == user).update({User.rating: User.rating + reduce_points}) # Querying for the user data and updating
+        print("AFTER",modify_user) ## Debugging 
+
+#    date = request.json['date_posted']
+    # Adding the new post along with the time stamp
+    new_post = Post(title=title, date_posted=date_posted, content=content, user_id=user, group_id=group)
     db.session.add(new_post)
     db.session.commit()
 
-    print("POSSSSSSSSSST")
+    print("Post_Added")
     result = post.dump(Post.query.filter_by(group_id=group_id))
     print(result)
     return jsonify({'result': result})
@@ -492,7 +565,6 @@ def send_mail():
         mail.send(msg)
 
 # This route redirects the account function to be used at the profile page
-
 
 @app.route("/profile")
 def account():
@@ -668,8 +740,8 @@ def populate_table_data():
 
 if __name__ == '__main__':
 
-    # delete_table_data()
-    # populate_table_data()
+    #delete_table_data()
+    #populate_table_data()
     app.run(debug=True)
 
    # socketIo.run(app)
