@@ -84,7 +84,7 @@ class BlackList(db.Model):
         'user.user_name'))
 
     def __repr__(self):
-        return f"BlackList('{self.user_id}')"
+        return f"BlackList('{self.user_id}', {self.user_name})"
 
 # This class creates the Groups table in SQLITE
 
@@ -213,7 +213,10 @@ class BlackBoxSchema(ma.SQLAlchemySchema):
 class WhiteBoxSchema(ma.SQLAlchemySchema):
     class Meta:
         fields = ('group_id','whtbxd_prsn_id','group_id')
-
+# Used to get blacklisted users
+class BlackListSchema(ma.SQLAlchemySchema):
+    class Meta:
+        fields = ('user_id','user_name')
 
 app.config['JWT_SECRET_KEY'] = 'secret'
 #socketIo = SocketIO(app, cors_allowed_origins="*")
@@ -260,14 +263,25 @@ def register():
     user_type = 0
     rating = 0
 
-  #  created = datetime.utcnow()
+    #  created = datetime.utcnow()
+    
+    # Getting the rows within the black_list table
+    find_user = BlackListSchema(many=True)
+    banned_list = find_user.dump(BlackList.query.filter_by(user_name=user_name))
+    # Getting the blacklisted user_names and storing them in a list
+    banned_users = [each_user['user_name'] for each_user in banned_list] 
 
-    user = User(user_name=user_name, first_name=first_name, last_name=last_name, email=email,
+    # Checking if the filled out user name is within the black listed user_names
+    if (user_name in banned_users):
+        print("CURRENT_USER:",user_name,"HAS BEEN BLACK LISTED!")
+        return jsonify({'result': None}) # Not sure what to return when a user is black listed, but this works without any erorrs...
+    else: # The user_name is not black listed and is added to the database
+        user = User(user_name=user_name, first_name=first_name, last_name=last_name, email=email,
                 password=password, interest=interest, references=references, user_type=user_type, rating=rating)  # , created=created)
-    db.session.add(user)
-    db.session.commit()
+        db.session.add(user)
+        db.session.commit()
 
-    result = {
+        result = {
         'user_name': user_name,
         'first_name': first_name,
         'last_name': last_name,
@@ -278,9 +292,9 @@ def register():
         'user_type': user_type,
         'rating': rating,
 
-    }
-
-    return jsonify({'result': result})
+        }
+        print("ACCUNT CREATED:\n",result)
+        return jsonify({'result':result})
 
 
 @app.route('/projects', methods=['GET'])

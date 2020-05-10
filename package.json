@@ -4,8 +4,7 @@
   "description": "",
   "build": {
     "appId": "react.electron",
-    "win":
-    {
+    "win": {
       "icon": "build/icon.png"
     }
   },
@@ -21,7 +20,6 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-
   "bugs": {
     "url": "https://github.com/12NaN/CSc322-TeamX-Software-Engineering-Project/issues"
   },
