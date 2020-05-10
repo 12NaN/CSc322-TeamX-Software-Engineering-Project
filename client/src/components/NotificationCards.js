@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Card } from 'react-bootstrap';
 import jwt_decode from 'jwt-decode'
+import axios from 'axios'
 
 class NotificationCards extends Component {
     constructor(props) {
@@ -11,7 +12,7 @@ class NotificationCards extends Component {
             recipient_id: 0,
             body: '',
             user_id: 0,
-            isToggleOn: false,
+            isDisabled: false,
             dataFetched: false
         }
 
@@ -32,8 +33,19 @@ class NotificationCards extends Component {
     }
 
     onApprove() {
+        axios.post('/notifications', {
+            id: this.state.id,
+            sender_id: this.state.sender_id,
+            recipient_id: this.state.recipient_id,
+            body: "Approved",
+
+        })
+            .then((r) => {
+                console.log(r)
+            })
         this.setState(state => ({
-            isToggleOn: !state.isToggleOn
+            isDisabled: true,
+            disabled: true,
         }));
     }
 
@@ -50,7 +62,7 @@ class NotificationCards extends Component {
             button = <button style={{ float: "right" }}>Rate</button>
         }
         if (isInvite == 3) {
-            button = <button onClick={this.onApprove} style={{ float: "right" }}>{this.state.isToggleOn ? 'ON' : 'OFF'}</button>
+            button = <button onClick={this.onApprove} disabled={this.state.isDisabled} style={{ float: "right" }}>Approve</button>
 
             button2 = <button style={{ float: "right" }}>Deny</button>
         }
