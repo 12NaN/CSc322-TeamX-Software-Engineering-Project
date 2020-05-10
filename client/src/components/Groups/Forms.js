@@ -17,24 +17,29 @@ class Forms extends Component {
       }
       onSubmit = (e)=>{
           e.preventDefault();
-          this.setState({
-            prevPosts: [{'content': this.state.content, 'group_id': this.state.group_id, 'title': this.state.title, 'user_id': this.state.user_id, 'date_posted':this.state.date_posted},...this.state.prevPosts]
-          }) 
+          if(this.state.title == "" || this.state.content == ""){
+            alert("Error. There is an empty field.")
+          }
+          else{
+            this.setState({
+              prevPosts: [{'content': this.state.content, 'group_id': this.state.group_id, 'title': this.state.title, 'user_id': this.state.user_id, 'date_posted':this.state.date_posted},...this.state.prevPosts]
+            }) 
           //const {match: {params}} = this.props
-          axios.post(`/projects/${this.state.group_id}`, {
-            title: this.state.title,
-            group_id: this.state.group_id,
-            user_id: this.state.user_id,
-            content: this.state.content,
-            date_posted: this.state.date_posted,
-          })
-          .then((r) =>{
-              console.log(r)
-          })
-          this.setState({
-              title: '',
-              content: ''
-          })
+            axios.post(`/projects/${this.state.group_id}`, {
+              title: this.state.title,
+              group_id: this.state.group_id,
+              user_id: this.state.user_id,
+              content: this.state.content,
+              date_posted: this.state.date_posted,
+            })
+            .then((r) =>{
+                console.log(r)
+            })
+            this.setState({
+                title: '',
+                content: ''
+            })
+          }
           
       }
       // Custom static function that timestamps a post .. Can we move to UserFunctions.js??
@@ -86,15 +91,15 @@ class Forms extends Component {
      }
       render() {
         const list = this.state.prevPosts.map((i) =>
-        <div>
-            <Card.Header>{i['title']} &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; {i['date_posted']}</Card.Header>
-            <Card.Body>
-                <blockquote className="blockquote mb-0">
-                {i['content']}
-                </blockquote>
-            </Card.Body>
-            <br/>
-        </div>
+            <div>
+                <Card.Header>{i['title']} &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; {i['date_posted']}</Card.Header>
+                <Card.Body>
+                    <blockquote className="blockquote mb-0">
+                    {i['content']}
+                    </blockquote>
+                </Card.Body>
+                <br/>
+            </div>
         );
         return (
             <div>

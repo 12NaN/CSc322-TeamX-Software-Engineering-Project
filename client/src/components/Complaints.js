@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {Form} from 'react-bootstrap';
+import {Form, Button} from 'react-bootstrap';
 
 class Complaints extends Component {
     render() {
@@ -16,6 +16,9 @@ class Complaints extends Component {
                 <Form.Label>Text</Form.Label>
                 <Form.Control as="textarea" rows="3" />
             </Form.Group>
+            <Button variant="secondary" style={{"backgroundColor": "purple"}} type="submit" onClick={this.setTimeStamp}>
+                Submit
+            </Button>
             </Form>
             </div>
         );
