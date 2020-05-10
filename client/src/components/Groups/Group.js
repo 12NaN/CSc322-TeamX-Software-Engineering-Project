@@ -3,6 +3,7 @@ import Ratings from '../Ratings';
 import Todo from './Todo';
 import Sections from './Sections';
 import Poll from './Poll';
+import PollSection from './PollSection';
 import Members from './Members';
 import Evaluations from './Evaluations';
 import Warnings from './Warnings';
@@ -102,7 +103,7 @@ class Group extends Component {
                 <hr></hr>
                 <Sections sectionName="Tasks" privacy={localStorage && this.state.memNames.length != 0 && localStorage.usertoken && this.state.memNames.includes(this.state.user_id)  ? false : this.state.visi_posts} component={<Todo/>}/>
                 <hr></hr>
-                <Sections sectionName="Poll" privacy={localStorage && this.state.memNames.length != 0 && localStorage.usertoken && this.state.memNames.includes(this.state.user_id)  ? false : this.state.visi_posts} component={<Poll groupID= {this.state.id}/>}/>
+                <Sections sectionName="Poll" privacy={localStorage && this.state.memNames.length != 0 && localStorage.usertoken && this.state.memNames.includes(this.state.user_id)  ? false : this.state.visi_posts} component={<PollSection group= {this.state.id}/>}/>
                 <hr></hr>
                 <Sections sectionName="Evaluations" privacy={localStorage && this.state.memNames.length != 0 && localStorage.usertoken && this.state.memNames.includes(this.state.user_id)  ? false : this.state.visi_eval} component={<Evaluations/>}/>
                 <hr></hr>
