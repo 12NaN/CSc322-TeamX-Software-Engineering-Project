@@ -140,7 +140,7 @@ class Post(db.Model):
         'groups.group_id'), nullable=False)
 
     def __repr__(self):
-        return f"Post('{self.title}', '{self.content}', '{self.user_id}', '{self.group_id}')"
+        return f"Post('{self.title}', '{self.content}', '{self.user_id}', '{self.group_id}, '{self.date_posted}')"
 
 # This class creates the User table in SQLITE
 
@@ -197,7 +197,7 @@ class GroupMemSchema(ma.SQLAlchemySchema):
 
 class PostSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
-        fields = ('title', 'content', 'user_id', 'group_id')
+        fields = ('title', 'date_posted', 'content', 'user_id', 'group_id')
 
 
 class NotificationSchema(ma.SQLAlchemySchema):
@@ -462,7 +462,7 @@ def posts(group_id):
     taboo = open('taboo.txt', 'r')
     title = request.json['title']
     content = request.json['content']
-    date_posted = request.json['date_posted']
+    date_posted = datetime.strptime(request.json['date_posted'], "%a, %d %b %Y %H:%M:%S %Z")
     print(date_posted)
     reduce_points = 0 # Amount of points to reduce if taboo word is found
     penalty = 5 # Number of points to reduce if a taboo word is found within the title or content
@@ -488,8 +488,8 @@ def posts(group_id):
         print("AFTER",modify_user) ## Debugging 
 
 #    date = request.json['date_posted']
-
-    new_post = Post(title=title, content=content, user_id=user, group_id=group, date_posted=date_posted)
+    # Adding the new post along with the time stamp
+    new_post = Post(title=title, date_posted=date_posted, content=content, user_id=user, group_id=group)
     db.session.add(new_post)
     db.session.commit()
 
