@@ -153,11 +153,12 @@ class Post(db.Model):
                             default=datetime.utcnow)
     content = db.Column(db.Text, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_name = db.Column(db.String(20), unique=True, nullable=False)
     group_id = db.Column(db.Integer, db.ForeignKey(
         'groups.group_id'), nullable=False)
 
     def __repr__(self):
-        return f"Post('{self.title}', '{self.content}', '{self.user_id}', '{self.group_id}, '{self.date_posted}')"
+        return f"Post('{self.title}', '{self.content}', '{self.user_id}', '{self.user_name}', {self.group_id}, '{self.date_posted}')"
 
 # This class creates the User table in SQLITE
 
@@ -214,7 +215,7 @@ class GroupMemSchema(ma.SQLAlchemySchema):
 
 class PostSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
-        fields = ('title', 'date_posted', 'content', 'user_id', 'group_id')
+        fields = ('title', 'date_posted', 'content', 'user_id', 'user_name', 'group_id')
 
 
 class NotificationSchema(ma.SQLAlchemySchema):
@@ -568,6 +569,7 @@ def posts(group_id):
             content = content.replace(stripped_line, '*'*len(stripped_line))
     taboo.close()
     user = request.json['user_id']
+    name = request.json['user_name']
     group = request.json['group_id']
 
     if reduce_points != 0:  # If the reduction_points is < 0, then reduce the necessary points to the user who used the taboo words
@@ -581,7 +583,7 @@ def posts(group_id):
 #    date = request.json['date_posted']
     # Adding the new post along with the time stamp
     new_post = Post(title=title, date_posted=date_posted,
-                    content=content, user_id=user, group_id=group)
+                    content=content, user_id=user, user_name=name, group_id=group)
     db.session.add(new_post)
     db.session.commit()
 
