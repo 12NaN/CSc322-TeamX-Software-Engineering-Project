@@ -8,11 +8,11 @@ class Forms extends Component {
         super(props);
         this.state = {
             title: '',
+            date_posted: '',
             group_id: this.props.group,
             user_id: this.props.user,
             content: '',
-            prevPosts: [],
-            date_posted: '',
+            prevPosts: []
          };
       }
       onSubmit = (e)=>{
@@ -40,16 +40,7 @@ class Forms extends Component {
       // Custom static function that timestamps a post .. Can we move to UserFunctions.js??
       static getDateTime(){
         var d = new Date();
-      
-        var year = d.getFullYear();
-        var month = String(d.getMonth() + 1).padStart(2, '0'); //January is 0!
-        var date = String(d.getDate()).padStart(2, '0');
-        var hr = d.getHours();
-        var hour = " " + d.getHours()+ ":";
-        var min = d.getMinutes()+ ":";
-        var sec = d.getSeconds();
-        var n = year+'-'+month+'-'+date+hour+min+sec;
-        return n;
+        return d.toUTCString();
       }
       myChangeHandler1 = (event) => {
         this.setState({title: event.target.value});
@@ -57,6 +48,7 @@ class Forms extends Component {
       myChangeHandler2 = (e)=>{
           this.setState({content: e.target.value});
       }
+      // Handling the time stamp when the button is clicked
       setTimeStamp = (e)=>{
         this.setState({date_posted: Forms.getDateTime()})
       }
