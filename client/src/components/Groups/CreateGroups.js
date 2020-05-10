@@ -44,19 +44,37 @@ class CreateGroups extends Component {
     }
     handleOnClick(e){
         e.preventDefault();
-        axios.post('/projects/create', {
-            group_name: this.state.name,
-            group_desc: this.state.desc,
-            visi_post: this.state.post== true ? 1 : 0,
-            visi_members: this.state.members == true ? 1 : 0,
-            visi_eval: this.state.eval == true ? 1 : 0,
-            visi_warn: this.state.warn == true ? 1 : 0,
-            rating: 0
-          })
-          .then((r) =>{
-              console.log(r)
-          })
+        let groups = [];
+        axios.get('/projects')
+        .then(response =>
+        {
+            for(let i = 0; i < response.data.length; i++){
+                console.log(response.data[i]['group_name'])
+                groups.push(response.data[i]['group_name']);
+            }
+            console.log(response);
+            return response;
+        });
+        console.log(groups)
+        if(!groups.includes(this.state.name)){
+            axios.post('/projects/create', {
+                group_name: this.state.name,
+                group_desc: this.state.desc,
+                visi_post: this.state.post== true ? 1 : 0,
+                visi_members: this.state.members == true ? 1 : 0,
+                visi_eval: this.state.eval == true ? 1 : 0,
+                visi_warn: this.state.warn == true ? 1 : 0,
+                rating: 0
+            })
+            .then((r) =>{
+                console.log(r)
+            })
+        }
+        else{
+            alert("That group name already exists!")
+        }
     }
+    
     render() {
         return (
             <div>

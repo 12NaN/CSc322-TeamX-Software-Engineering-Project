@@ -21,31 +21,30 @@ class Cards extends Component {
         })
     }
     render() {
-        
-        return (
-            <div>
-                <Card>
-                    <Card.Img variant="top" src={''} />
-                    <Card.Body>
-                    <Card.Title>{this.state.name}</Card.Title>
+            return (
+                <div>
+                    <Card>
+                        <Card.Img variant="top" src={''} />
+                        <Card.Body>
+                        <Card.Title>{this.state.name}</Card.Title>
+                            <Card.Text>
+                                <Ratings rating={this.state.rating}/>
+                            </Card.Text>
+                        {/*
                         <Card.Text>
-                            <Ratings rating={this.state.rating}/>
+                            This is a wider card with supporting text below as a natural lead-in to
+                            additional content. This content is a little bit longer.
                         </Card.Text>
-                    {/*
-                    <Card.Text>
-                        This is a wider card with supporting text below as a natural lead-in to
-                        additional content. This content is a little bit longer.
-                    </Card.Text>
-                    */}
-                    </Card.Body>
-                    <Card.Footer>
-                    <Link to={this.props.type == "user" ? "/users/"+ this.props.id: "/projects/" + this.props.id}>
-                            View Page
-                    </Link>                 
-                    </Card.Footer>
-                </Card>
-            </div>
-        );
+                        */}
+                        </Card.Body>
+                        <Card.Footer>
+                        <Link to={this.props.type == "user" ? "/users/"+ this.props.id: "/projects/" + this.props.id}>
+                                View Page
+                        </Link>                 
+                        </Card.Footer>
+                    </Card>
+                </div>
+            );
     }
 }
 
