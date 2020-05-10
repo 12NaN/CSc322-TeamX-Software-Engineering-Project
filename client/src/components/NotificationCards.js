@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Card } from 'react-bootstrap';
 import jwt_decode from 'jwt-decode'
+import axios from 'axios'
 
 class NotificationCards extends Component {
     constructor(props) {
@@ -32,6 +33,16 @@ class NotificationCards extends Component {
     }
 
     onApprove() {
+        axios.post('/notifications', {
+            id: this.state.id,
+            sender_id: this.state.sender_id,
+            recipient_id: this.state.recipient_id,
+            body: "Approved",
+
+        })
+            .then((r) => {
+                console.log(r)
+            })
         this.setState(state => ({
             isDisabled: true,
             disabled: true,

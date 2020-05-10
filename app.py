@@ -14,19 +14,21 @@ from marshmallow_sqlalchemy import ModelSchema
 from pymysql import NULL
 from flask_mail import Mail, Message
 
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'mysecret'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
 
 
-mail_settings = {
-    "MAIL_SERVER": 'smtp.gmail.com',
-    "MAIL_PORT": 465,
-    "MAIL_USE_TLS": False,
-    "MAIL_USE_SSL": True,
-    "MAIL_USERNAME": "bryarebryare@gmail.com",
-    "MAIL_PASSWORD": "slbxejdbnzzbdrkg"
-}
+app.config['SECRET_KEY'] = 'top-secret!'
+app.config['MAIL_SERVER'] = 'smtp.sendgrid.net'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'apikey'
+app.config['MAIL_PASSWORD'] = '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'
+app.config['MAIL_DEFAULT_SENDER'] = 'admin@friends.com'
+
+
 # API Key needed for the post function of the program
 pusher = Pusher(
     app_id='989464',
@@ -37,7 +39,6 @@ pusher = Pusher(
 )
 
 
-app.config.update(mail_settings)
 mail = Mail(app)
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
@@ -73,7 +74,8 @@ class User(db.Model):
         return User.query.get(user_id)
 
     def __repr__(self):
-        return f"User('{self.user_name}', '{self.email}', '{self.image_file}','{self.rating}')" # String representation of a query
+        # String representation of a query
+        return f"User('{self.user_name}', '{self.email}', '{self.image_file}','{self.rating}')"
 
 # This class creates the BlackBox table in SQLITE
 
@@ -222,16 +224,19 @@ class NotificationSchema(ma.SQLAlchemySchema):
 
 class BlackBoxSchema(ma.SQLAlchemySchema):
     class Meta:
-        fields = ('user_id','blkbxd_prsn_id','group_id')
+        fields = ('user_id', 'blkbxd_prsn_id', 'group_id')
 
 
 class WhiteBoxSchema(ma.SQLAlchemySchema):
     class Meta:
-        fields = ('group_id','whtbxd_prsn_id','group_id')
+        fields = ('group_id', 'whtbxd_prsn_id', 'group_id')
 # Used to get blacklisted users
+
+
 class BlackListSchema(ma.SQLAlchemySchema):
     class Meta:
-        fields = ('user_id','user_name')
+        fields = ('user_id', 'user_name')
+
 
 app.config['JWT_SECRET_KEY'] = 'secret'
 # socketIo = SocketIO(app, cors_allowed_origins="*")
@@ -279,29 +284,31 @@ def register():
     rating = 0
 
     #  created = datetime.utcnow()
-    
+
     # Getting the rows within the black_list table
     find_user = BlackListSchema(many=True)
-    banned_list = find_user.dump(BlackList.query.filter_by(user_name=user_name))
+    banned_list = find_user.dump(
+        BlackList.query.filter_by(user_name=user_name))
     # Getting the blacklisted user_names and storing them in a list
-    banned_users = [each_user['user_name'] for each_user in banned_list] 
+    banned_users = [each_user['user_name'] for each_user in banned_list]
 
     # Checking if the filled out user name is within the black listed user_names
     if (user_name in banned_users):
-        print("CURRENT_USER:",user_name,"HAS BEEN BLACK LISTED!")
-        return jsonify({'result': None}) # Not sure what to return when a user is black listed, but this works without any erorrs...
-    else: # The user_name is not black listed and is added to the database
+        print("CURRENT_USER:", user_name, "HAS BEEN BLACK LISTED!")
+        # Not sure what to return when a user is black listed, but this works without any erorrs...
+        return jsonify({'result': None})
+    else:  # The user_name is not black listed and is added to the database
         user = User(user_name=user_name, first_name=first_name, last_name=last_name, email=email,
-                password=password, interest=interest, references=references, user_type=user_type, rating=rating)  # , created=created)
+                    password=password, interest=interest, references=references, user_type=user_type, rating=rating)  # , created=created)
 
     notification = Notification(
-        id=3, group_id=NULL, sender_id=2, recipient_id=1, body="A new visitor has just registered.")
+        id=3, group_id=NULL, sender_id=2, recipient_id=1, body="A new visitor has just registered.!!")
 
     db.session.add(user)
     db.session.add(notification)
     db.session.commit()
 
-        result = {
+    result = {
         'user_name': user_name,
         'first_name': first_name,
         'last_name': last_name,
@@ -312,9 +319,9 @@ def register():
         'user_type': user_type,
         'rating': rating,
 
-        }
-        print("ACCUNT CREATED:\n",result)
-        return jsonify({'result':result})
+    }
+    print("ACCUNT CREATED:\n", result)
+    return jsonify({'result': result})
 
 
 @app.route('/projects', methods=['GET'])
@@ -326,6 +333,8 @@ def groups():
         'Groups': output
     }
     return jsonify(result)
+
+
 @app.route('/projects/create', methods=['POST'])
 def create():
     """
@@ -351,10 +360,11 @@ def create():
     desc = request.json['group_desc']
     posts = bool(request.json['visi_post'])
     members = bool(request.json['visi_members'])
-    evaluate =  bool(request.json['visi_eval'])
+    evaluate = bool(request.json['visi_eval'])
     warn = bool(request.json['visi_warn'])
     rating = request.json['rating']
-    new_group = Groups(group_name=name, group_desc = desc, visi_posts = posts, visi_members = members, visi_eval = evaluate, visi_warn=warn, rating=rating)
+    new_group = Groups(group_name=name, group_desc=desc, visi_posts=posts,
+                       visi_members=members, visi_eval=evaluate, visi_warn=warn, rating=rating)
     db.session.add(new_group)
     db.session.commit()
 
@@ -362,6 +372,7 @@ def create():
     result = group.dump(Groups.query.filter_by(group_name=name))
     print(result)
     return jsonify({'result': result})
+
 
 @app.route('/users', methods=['GET'])
 def profiles():
@@ -384,6 +395,35 @@ def showNotifications():
         'Notifications': output,
     }
 
+    return jsonify(result)
+
+
+@app.route('/notifications', methods=['POST'])
+def approve():
+    print("HELLO")
+    id = request.json['id']
+    sender_id = request.json['sender_id']
+    recipient_id = request.json['recipient_id']
+    body = "yyyyy"
+
+    notification = Notification(
+        id=id, group_id=NULL, sender_id=sender_id, recipient_id=2, body=body)
+    db.session.add(notification)
+    db.session.commit()
+    msg = Message('Twilio SendGrid Test Email',
+                  recipients=['bareval001@citymail.cuny.edu'])
+
+    msg.body = 'This is a test email!'
+    msg.html = '<p>This is a test email!</p>'
+    mail.send(msg)
+
+    result = {
+        'id': id,
+        'group_id': NULL,
+        'sender_id': sender_id,
+        'recipient_id': recipient_id,
+        'body': body,
+    }
     return jsonify(result)
 
 
@@ -496,34 +536,38 @@ def posts(group_id):
     taboo = open('taboo.txt', 'r')
     title = request.json['title']
     content = request.json['content']
-    date_posted = datetime.strptime(request.json['date_posted'], "%a, %d %b %Y %H:%M:%S %Z")
+    date_posted = datetime.strptime(
+        request.json['date_posted'], "%a, %d %b %Y %H:%M:%S %Z")
     print(date_posted)
-    reduce_points = 0 # Amount of points to reduce if taboo word is found
-    penalty = 5 # Number of points to reduce if a taboo word is found within the title or content
+    reduce_points = 0  # Amount of points to reduce if taboo word is found
+    penalty = 5  # Number of points to reduce if a taboo word is found within the title or content
     for line in taboo:
         stripped_line = line.strip()
         # print(stripped_line)
         if stripped_line in title:
-            reduce_points -= penalty# Reduce points if taboo is in title
+            reduce_points -= penalty  # Reduce points if taboo is in title
             print(stripped_line)
             title = title.replace(stripped_line, '*'*len(stripped_line))
         if stripped_line in content:
-            reduce_points -= penalty # Reduce Reduce points if taboo is in content
+            reduce_points -= penalty  # Reduce Reduce points if taboo is in content
             print(stripped_line)
             content = content.replace(stripped_line, '*'*len(stripped_line))
     taboo.close()
     user = request.json['user_id']
     group = request.json['group_id']
 
-    if reduce_points != 0: # If the reduction_points is < 0, then reduce the necessary points to the user who used the taboo words
-        modify_user = User.query.get_or_404(user) # Might need exception handling
-        print("BEFORE",modify_user) ## Debugging 
-        db.session.query(User).filter(User.id == user).update({User.rating: User.rating + reduce_points}) # Querying for the user data and updating
-        print("AFTER",modify_user) ## Debugging 
+    if reduce_points != 0:  # If the reduction_points is < 0, then reduce the necessary points to the user who used the taboo words
+        modify_user = User.query.get_or_404(
+            user)  # Might need exception handling
+        print("BEFORE", modify_user)  # Debugging
+        db.session.query(User).filter(User.id == user).update(
+            {User.rating: User.rating + reduce_points})  # Querying for the user data and updating
+        print("AFTER", modify_user)  # Debugging
 
 #    date = request.json['date_posted']
     # Adding the new post along with the time stamp
-    new_post = Post(title=title, date_posted=date_posted, content=content, user_id=user, group_id=group)
+    new_post = Post(title=title, date_posted=date_posted,
+                    content=content, user_id=user, group_id=group)
     db.session.add(new_post)
     db.session.commit()
 
@@ -554,17 +598,8 @@ def updateTodo(group_id):
     return jsonify(data)
 
 
-@app.route("/notifications")
-def send_mail():
-    with app.app_context():
-        msg = Message(subject="Hello",
-                      sender=app.config.get("MAIL_USERNAME"),
-                      # replace with your email for testing
-                      recipients=["bareval001@citymail.cuny.edu"],
-                      body="This is a test email I sent with Gmail and Python!")
-        mail.send(msg)
-
 # This route redirects the account function to be used at the profile page
+
 
 @app.route("/profile")
 def account():
@@ -740,8 +775,8 @@ def populate_table_data():
 
 if __name__ == '__main__':
 
-    #delete_table_data()
-    #populate_table_data()
+    # delete_table_data()
+    # populate_table_data()
     app.run(debug=True)
 
    # socketIo.run(app)
