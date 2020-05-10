@@ -72,7 +72,7 @@ class BlackBox(db.Model):
         'groups.group_id', ondelete="CASCADE"))
 
     def __repr__(self):
-        return f"BlackBox('{self.user_id}')"
+        return f"BlackBox('{self.user_id}','{self.blkbxd_prsn_id}','{self.group_id}')"
 
 # This class creates the BlackList table in SQLITE
 
@@ -157,7 +157,7 @@ class WhiteBox(db.Model):
         'groups.group_id', ondelete="CASCADE"))
 
     def __repr__(self):
-        return f"WhiteBox('{self.user_id}')"
+        return f"WhiteBox('{self.user_id}','{self.whtbxd_prsn_id}','{self.group_id}')"
 
 # This class creates the Results table in SQLITE
 
@@ -203,6 +203,16 @@ class PostSchema(ma.SQLAlchemyAutoSchema):
 class NotificationSchema(ma.SQLAlchemySchema):
     class Meta:
         fields = ('id', 'sender_id', 'recipient_id', 'body')
+
+
+class BlackBoxSchema(ma.SQLAlchemySchema):
+    class Meta:
+        fields = ('user_id','blkbxd_prsn_id','group_id')
+
+
+class WhiteBoxSchema(ma.SQLAlchemySchema):
+    class Meta:
+        fields = ('group_id','whtbxd_prsn_id','group_id')
 
 
 app.config['JWT_SECRET_KEY'] = 'secret'
@@ -452,7 +462,8 @@ def posts(group_id):
     taboo = open('taboo.txt', 'r')
     title = request.json['title']
     content = request.json['content']
-
+    date_posted = request.json['date_posted']
+    print(date_posted)
     reduce_points = 0 # Amount of points to reduce if taboo word is found
     penalty = 5 # Number of points to reduce if a taboo word is found within the title or content
     for line in taboo:
@@ -478,7 +489,7 @@ def posts(group_id):
 
 #    date = request.json['date_posted']
 
-    new_post = Post(title=title, content=content, user_id=user, group_id=group)
+    new_post = Post(title=title, content=content, user_id=user, group_id=group, date_posted=date_posted)
     db.session.add(new_post)
     db.session.commit()
 
