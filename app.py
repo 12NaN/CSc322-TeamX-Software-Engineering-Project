@@ -370,18 +370,32 @@ def showNotifications():
 @app.route("/users/<user_id>", methods=['GET'])
 def profile(user_id):
     user = User.query.filter_by(id=user_id)
-    #group = Groups.query.filter_by(group_id=id)
+    users = User.query.all()
+    black = BlackBox.query.filter_by(user_id=user_id)
+    white = WhiteBox.query.filter_by(user_id=user_id)
+    group = Groups.query
     groupMem = GroupMembers.query.filter_by(user_id=user_id)
+    print(groupMem)
+    print("helllllllllllllllo")
+    blk = BlackBoxSchema(many=True)
+    wht = WhiteBoxSchema(many=True)
     us = UserSchema(many=True)
-    #g = GroupSchema(many=True)
+    us2 = UserSchema(many = True)
+    g = GroupSchema(many=True)
     gM = GroupMemSchema(many=True)
     output = us.dump(user)
-    #output2 = g.dump(group)
-    output3 = gM.dump(groupMem)
+    output2 = wht.dump(white)
+    output3 = blk.dump(black)
+    output4 = g.dump(group)
+    output5 = gM.dump(groupMem)
+    output6 = us2.dump(users)
     result = {
-        'User': output
-        # 'Group': output2,
-        # 'GroupMem': output3
+        'User': output,
+        'White': output2,
+        'Black': output3,
+        'Groups': output4,
+        'GroupMembers': output5,
+        'Users': output6
     }
     return jsonify(result)
 
@@ -533,6 +547,8 @@ def updateTodo(group_id):
     print("pushed")
     return jsonify(data)
 
+
+
 # This route redirects the account function to be used at the profile page
 
 @app.route("/profile")
@@ -553,11 +569,11 @@ def delete_table_data():
     db.session.query(Todo).delete()
     db.session.query(WhiteBox).delete()
     db.session.commit()
-"""
+
 
 # Populates rows in the following tables.
 
-"""
+
 def populate_table_data():
 
     # populate rows for user table.
