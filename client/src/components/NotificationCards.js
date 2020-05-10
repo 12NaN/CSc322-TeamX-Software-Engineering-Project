@@ -11,7 +11,7 @@ class NotificationCards extends Component {
             recipient_id: 0,
             body: '',
             user_id: 0,
-            isToggleOn: false,
+            isDisabled: false,
             dataFetched: false
         }
 
@@ -33,7 +33,8 @@ class NotificationCards extends Component {
 
     onApprove() {
         this.setState(state => ({
-            isToggleOn: !state.isToggleOn
+            isDisabled: true,
+            disabled: true,
         }));
     }
 
@@ -50,7 +51,7 @@ class NotificationCards extends Component {
             button = <button style={{ float: "right" }}>Rate</button>
         }
         if (isInvite == 3) {
-            button = <button onClick={this.onApprove} style={{ float: "right" }}>{this.state.isToggleOn ? 'ON' : 'OFF'}</button>
+            button = <button onClick={this.onApprove} disabled={this.state.isDisabled} style={{ float: "right" }}>Approve</button>
 
             button2 = <button style={{ float: "right" }}>Deny</button>
         }

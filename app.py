@@ -11,11 +11,22 @@ from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 import json
 from flask_marshmallow import Marshmallow
 from marshmallow_sqlalchemy import ModelSchema
+from pymysql import NULL
+from flask_mail import Mail, Message
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'mysecret'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
 
+
+mail_settings = {
+    "MAIL_SERVER": 'smtp.gmail.com',
+    "MAIL_PORT": 465,
+    "MAIL_USE_TLS": False,
+    "MAIL_USE_SSL": True,
+    "MAIL_USERNAME": "bryarebryare@gmail.com",
+    "MAIL_PASSWORD": "slbxejdbnzzbdrkg"
+}
 # API Key needed for the post function of the program
 pusher = Pusher(
     app_id='989464',
@@ -24,6 +35,10 @@ pusher = Pusher(
     cluster='us2',
     ssl=True
 )
+
+
+app.config.update(mail_settings)
+mail = Mail(app)
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
 # In Python terminal "from app import db" then "db.create_all()"
@@ -206,7 +221,7 @@ class NotificationSchema(ma.SQLAlchemySchema):
 
 
 app.config['JWT_SECRET_KEY'] = 'secret'
-#socketIo = SocketIO(app, cors_allowed_origins="*")
+# socketIo = SocketIO(app, cors_allowed_origins="*")
 
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
@@ -254,7 +269,12 @@ def register():
 
     user = User(user_name=user_name, first_name=first_name, last_name=last_name, email=email,
                 password=password, interest=interest, references=references, user_type=user_type, rating=rating)  # , created=created)
+
+    notification = Notification(
+        id=3, group_id=NULL, sender_id=2, recipient_id=1, body="A new visitor has just registered.")
+
     db.session.add(user)
+    db.session.add(notification)
     db.session.commit()
 
     result = {
@@ -311,13 +331,13 @@ def showNotifications():
 @app.route("/users/<user_id>", methods=['GET'])
 def profile(user_id):
     user = User.query.filter_by(id=user_id)
-    #group = Groups.query.filter_by(group_id=id)
+    # group = Groups.query.filter_by(group_id=id)
     groupMem = GroupMembers.query.filter_by(user_id=user_id)
     us = UserSchema(many=True)
-    #g = GroupSchema(many=True)
+    # g = GroupSchema(many=True)
     gM = GroupMemSchema(many=True)
     output = us.dump(user)
-    #output2 = g.dump(group)
+    # output2 = g.dump(group)
     output3 = gM.dump(groupMem)
     result = {
         'User': output
@@ -460,6 +480,17 @@ def updateTodo(group_id):
     print("pushed")
     return jsonify(data)
 
+
+@app.route("/notifications")
+def send_mail():
+    with app.app_context():
+        msg = Message(subject="Hello",
+                      sender=app.config.get("MAIL_USERNAME"),
+                      # replace with your email for testing
+                      recipients=["bareval001@citymail.cuny.edu"],
+                      body="This is a test email I sent with Gmail and Python!")
+        mail.send(msg)
+
 # This route redirects the account function to be used at the profile page
 
 
@@ -481,11 +512,11 @@ def delete_table_data():
     db.session.query(Todo).delete()
     db.session.query(WhiteBox).delete()
     db.session.commit()
-
+"""
 
 # Populates rows in the following tables.
 
-
+"""
 def populate_table_data():
 
     # populate rows for user table.
@@ -533,7 +564,7 @@ def populate_table_data():
     # populate rows for groups.
     groups1 = Groups(
         group_id=1, group_name='Team X', rating=20, group_desc="Good", visi_posts=True, visi_members=True, visi_eval=True, visi_warn=True)
-        #fields = ('group_id', 'group_name', 'rating', 'group_desc', 'visi_posts', 'visi_members', 'visi_eval', 'visi_warn')
+    # fields = ('group_id', 'group_name', 'rating', 'group_desc', 'visi_posts', 'visi_members', 'visi_eval', 'visi_warn')
 
     groups2 = Groups(
         group_id=2, group_name='Team A', rating=0, group_desc="Bad", visi_posts=True, visi_members=False, visi_eval=False, visi_warn=True)
@@ -631,7 +662,7 @@ def populate_table_data():
 
     # commit additions
     db.session.commit()
-    
+
     print("Done")
 """
 
