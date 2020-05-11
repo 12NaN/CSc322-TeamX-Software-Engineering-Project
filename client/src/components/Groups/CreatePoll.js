@@ -1,5 +1,7 @@
 import React, { Component } from "react";
 import axios from 'axios'
+import { NotificationContainer, NotificationManager } from 'react-notifications';
+import 'react-notifications/lib/notifications.css';
 
 class PollForm extends Component {
   constructor(props) {
@@ -8,7 +10,7 @@ class PollForm extends Component {
         console.log(this.props.location.state["group_id"])
         
         this.state = {
-          group_id: this.props.location.state["group_id"],   //This is the issue -> this.props.match.params['id'],
+          group_id: '',   
           polls: [{ date: "", startTime: "", endTime: "" }],
           description: ""
         };
@@ -23,7 +25,9 @@ class PollForm extends Component {
     } else {
       this.setState({ [e.target.name]: e.target.value });
     }
+    this.setState({ group_id: this.props.match.params['id'] }, () => console.log(this.state));
   };
+
   addpoll = e => {
     this.setState(prevState => ({
       polls: [...prevState.polls, { date: "", startTime: "", endTime: "" }]
@@ -35,8 +39,22 @@ class PollForm extends Component {
     polls1.splice(index, 1);
     this.setState({ polls: polls1 });
   }
+
   handleSubmit = e => {
     e.preventDefault();
+     if(this.state.description==='')
+        {
+            NotificationManager.warning("Please complete all fields.", 'ATTENTION');
+            return false;
+        }
+        for(var i=0;i<this.state.polls.length;i++)
+        {
+                if(this.state.polls[i].date==='' || this.state.polls[i].startTime===''|| this.state.polls[i].endTime==='')
+                {
+                    NotificationManager.warning("Please complete all fields.", 'ATTENTION');
+                    return false;
+                }
+        }
     axios.post(`/projects/${this.state.group_id}/createpoll`, {
       group_id: this.state.group_id,
       polls: this.state.polls,
@@ -44,21 +62,29 @@ class PollForm extends Component {
     })
     .then((r) =>{
       console.log(r)
-    })
-    
+    }).catch(error => {
+            if(error.response.status && error.response.status===500)
+            NotificationManager.error("Bad Request");
+            else NotificationManager.error("Something Went Wrong");
+            this.setState({ errors: error })
+        });
+        
+    NotificationManager.success("Poll Created!", 'SUCCESS');
+    setTimeout(() => this.props.history.push(`/projects/${this.props.match.params['id']}`),3000)
   }
-  componentDidMount(){
-    this.setState({
-      group_id: this.props.group_id
-    }); 
-    console.log(this.state.group_id)
+  
+  goBack = e =>{
+    this.setState({group_id: '', polls: [{ date: "", startTime: "", endTime: "" }], description: ""})
+    console.log(this.state)
+    this.props.history.push(`/projects/${this.props.match.params['id']}`)
   }
 
   render() {
     
     let { description, polls } = this.state;
     return (
-
+      <div className="content">
+      <NotificationContainer/>
       <form onSubmit={this.handleSubmit} onChange={this.handleChange}>
         <h1>Schedule a Meeting Poll</h1>
         <label htmlFor="description">Description: </label>
@@ -70,7 +96,7 @@ class PollForm extends Component {
           value={description}
           className="form-control " rows="3"
         />
-        <button onClick={this.addpoll} style={{"backgroundColor": "purple"}} className="btn btn-dark">Add New Option</button>
+        <button onClick={this.addpoll} type='button' style={{"backgroundColor": "purple"}} className="btn btn-dark">Add New Option</button>
         <br/><br/>
         {polls.map((val, idx) => {
           let pollid = `poll-${idx}`,
@@ -115,14 +141,17 @@ class PollForm extends Component {
               
               />
               </div>
-             <div className="col">              
-              <button onClick={() => this.detetePoll(idx)} style={{"backgroundColor": "purple"}} className="btn btn-dark"> - </button>
+             <div class="col">              
+              <button onClick={() => this.detetePoll(idx)} type='button'style={{"backgroundColor": "purple"}} className="btn btn-dark"> - </button>
               </div>
             </div>
           );
         })}
-        <input type="submit" value="Submit"  style={{"backgroundColor": "purple"}} className="btn btn-dark"/>
+        <button onClick={this.goBack} type='button' style={{"backgroundColor": "purple"}} className="btn btn-dark">Cancel</button>
+        &emsp;
+        <button type="submit" style={{"backgroundColor": "purple"}} className="btn btn-dark">Create</button>
       </form>
+      </div>
     );
   }
 }

@@ -14,7 +14,7 @@ export const register = newUser => {
       rating: newUser.rating == null ? 0 : newUser.rating
     })
     .then(response => {
-        console.log('Registered') 
+        console.log('Received Data') 
     })
     .catch(error =>{ // Added an exception for when a blacklisted user wants to register
       console.log("You have not been registed!")
