@@ -313,27 +313,18 @@ def register():
     rating = 0
 
     #  created = datetime.utcnow()
-
-    # Getting the rows within the black_list table
-    find_user = BlackListSchema(many=True)
-    banned_list = find_user.dump(
-        BlackList.query.filter_by(user_name=user_name))
-    # Getting the blacklisted user_names and storing them in a list
-    banned_users = [each_user['user_name'] for each_user in banned_list]
-
+    banned_users = getBlackListUsers(user_name)
     # Checking if the filled out user name is within the black listed user_names
     if (user_name in banned_users):
         print("CURRENT_USER:", user_name, "HAS BEEN BLACK LISTED!")
         # Not sure what to return when a user is black listed, but this works without any erorrs...
-        return jsonify({'result': None})
-    else:  # The user_name is not black listed and is added to the database
-        user = User(user_name=user_name, first_name=first_name, last_name=last_name, email=email,
+        return jsonify({"Error":"This user is banned from registering"})
+
+    # The user_name is not black listed and is added to the database
+    user = User(user_name=user_name, first_name=first_name, last_name=last_name, email=email,
                     password=password, interest=interest, references=references, user_type=user_type, rating=rating)  # , created=created)
-
     db.session.add(user)
-
     db.session.commit()
-
     notification = Notification(
         id=3, group_id=NULL, sender_id=user.id, recipient_id=1, body=user.user_name + " just signed up and is awaiting your approval.")
 
@@ -352,7 +343,7 @@ def register():
         'rating': rating,
 
     }
-    print("ACCUNT CREATED:\n", result)
+    print("ACCOUNT CREATED:\n", result)
     return jsonify({'result': result})
 
 
@@ -541,10 +532,15 @@ def login():
     result = ""
 
     user = User.query.filter_by(email=str(email)).first()
+    banned_emails = getBlackListEmails(email)
+
+    if (email in banned_emails):
+        print(email," IS BANNED! --py")
+        return jsonify({"error": "This email is banned!"})
 
     if user and bcrypt.check_password_hash(user.password, password):
         access_token = create_access_token(identity={'id': user.id, 'user_name': user.user_name,
-                                                     'first_name': user.first_name, 'last_name': user.last_name, 'email': user.email, 'rating': user.rating, 'id': user.id})
+                                                    'first_name': user.first_name, 'last_name': user.last_name, 'email': user.email, 'rating': user.rating, 'id': user.id})
         result = access_token
     else:
         result = jsonify({"error": "Invalid username and password"})
@@ -677,6 +673,44 @@ def account():
     image_file = url_for(
         'static', filename='client/src/components/ProfileImages/user.jpg')
 
+## SUPPLEMENTARY FUNCTIONS FOR ACCOUNT RETRIEVAL-------------------------
+# Making get WhiteBox and BlackBox Sooon...
+
+# Returns the list of black_listed_user names given the target user_name
+def getBlackListUsers(user_name):
+    # Getting the rows within the black_list table
+    find_user = BlackListSchema(many=True)
+    # Querying the Black list for the target user
+    banned_list = find_user.dump(
+        BlackList.query.filter_by(user_name=user_name))
+
+    # Getting the blacklisted user_names and returning them in a list
+    return [each_user['user_name'] for each_user in banned_list]
+    
+# Returns the list of black_listed emails given a user_email
+def getBlackListEmails(user_email):
+    if len(user_email) == 0: # Base case
+        return None
+
+    # Getting the rows within the user table
+    find_user = UserSchema(many=True)
+    # Getting the target user accounts based on their email
+    target_user = find_user.dump(
+        User.query.filter_by(email=user_email))
+    # Getting the target user names based on the given email
+    email_to_user_name = [account['user_name'] for account in target_user]
+
+    # Getting the banned users associated with each target user 
+    banned_users = [getBlackListUsers(i) for i in email_to_user_name]
+    # Folding the banned users list from the given email
+    black_list = [user_name for banned_list in banned_users  for user_name in banned_list]
+
+    if len(black_list) == 0 or black_list is None: # There were no emails associated with the target user from email
+        print(user_email," IS NOT BANNED!")
+        return []
+    else:# We found users in the black_list by the given target user, then return the email itself
+        print(user_email," IS BANNED!")
+        return [user_email]  
 
 # Deletes all rows from the following tables. BlackBox, BlackList, Groups, User, WhiteBox
 """
