@@ -134,6 +134,8 @@ class Poll(db.Model):
     desc = db.Column(db.String(100), nullable=False)
     group_id = db.Column(db.Integer, db.ForeignKey(
         'groups.group_id'), nullable=False)
+    def __repr__(self):
+        return f"Poll('{self.desc}', '{self.group_id}')"
         
 class PollOptions(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -141,6 +143,8 @@ class PollOptions(db.Model):
     poll_id = db.Column(db.Integer, db.ForeignKey(
         'poll.poll_id'), nullable=False)
     count = db.Column(db.Integer, nullable=True)
+    def __repr__(self):
+        return f"PollOptions('{self.option}', '{self.poll_id}', '{self.count}')"    
 
 # This class creates the Post table in SQLITE
 
@@ -252,13 +256,13 @@ class BlackListSchema(ma.SQLAlchemySchema):
     class Meta:
         fields = ('user_id', 'user_name')
 
-class PollSchema():
+class PollSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         fields = ('desc', 'group_id')
 
-class PollOptionsSchema():
+class PollOptionsSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
-        fields = ('id', 'option', 'poll_id', 'count')
+        fields = ('option', 'poll_id', 'count')
 
     
         
@@ -646,11 +650,23 @@ def createPoll(group_id):
     polloptions = PollOptionsSchema()
     group_id = request.json['group_id']
     desc = request.json['description'] 
-    polls = request.json['polls']
-    print(polls)
-    print(group_id)
+    creation_poll = Poll(desc=desc, group_id=group_id)
+    db.session.add(creation_poll)
+    db.session.commit()
+    cur_poll = db.session.query(db.func.max(Poll.poll_id)).scalar()
+    for i in request.json['polls']:
+        date = i['date']
+        start = i['startTime']
+        end = i['endTime']
+        print(date)
+        print(start)
+        print(end)
+        new_poll = PollOptions(option= 'On '+date+': Start -'+start+' End - '+end, poll_id = cur_poll, count = 0 )
+        db.session.add(new_poll)
+        db.session.commit()
     results = poll.dump(Poll.query.filter_by(group_id=group_id))
     return jsonify({'result': results})
+
 
 
 # This route redirects the account function to be used at the profile page
