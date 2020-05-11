@@ -133,6 +133,7 @@ class GroupMembers(db.Model):
 
 
 class Notification(db.Model):
+    notif_id = db.Column(db.Integer, primary_key=True)
     id = db.Column(db.Integer)
     group_id = db.Column(db.Integer, db.ForeignKey(
         'groups.group_id', ondelete="CASCADE"))
@@ -140,7 +141,7 @@ class Notification(db.Model):
         'user.id', ondelete="CASCADE"))
     recipient_id = db.Column(db.Integer, db.ForeignKey(
         'user.id', ondelete="CASCADE"))
-    body = db.Column(db.String(140), primary_key=True)
+    body = db.Column(db.String(140))
 
     def __repr__(self):
         return '<Message {}>'.format(self.body)
@@ -271,6 +272,7 @@ def handleVote(ballot):
 def register():
     print(request.get_json())
 #    cur = mysql.connection.cursor()
+
     user_name = request.get_json()['user_name']
     first_name = request.get_json()['first_name']
     last_name = request.get_json()['last_name']
@@ -301,10 +303,13 @@ def register():
         user = User(user_name=user_name, first_name=first_name, last_name=last_name, email=email,
                     password=password, interest=interest, references=references, user_type=user_type, rating=rating)  # , created=created)
 
-    notification = Notification(
-        id=3, group_id=NULL, sender_id=2, recipient_id=1, body="A new visitor has just registered.!!")
-
     db.session.add(user)
+
+    db.session.commit()
+
+    notification = Notification(
+        id=3, group_id=NULL, sender_id=user.id, recipient_id=1, body=user.user_name + " just signed up and is awaiting your approval.")
+
     db.session.add(notification)
     db.session.commit()
 
@@ -404,17 +409,17 @@ def approve():
     id = request.json['id']
     sender_id = request.json['sender_id']
     recipient_id = request.json['recipient_id']
-    body = "yyyyy"
+    body = "You have been approved"
 
     notification = Notification(
-        id=id, group_id=NULL, sender_id=sender_id, recipient_id=2, body=body)
+        id=id, group_id=NULL, sender_id=sender_id, recipient_id=recipient_id, body=body)
     db.session.add(notification)
     db.session.commit()
-    msg = Message('Twilio SendGrid Test Email',
+    msg = Message('You have been approved',
                   recipients=['bareval001@citymail.cuny.edu'])
 
     msg.body = 'This is a test email!'
-    msg.html = '<p>This is a test email!</p>'
+    msg.html = '<p>Your password is: password, your username is</p>'
     mail.send(msg)
 
     result = {
