@@ -60,7 +60,7 @@ class PollForm extends Component {
     .then((r) =>{
       console.log(r)
     }).catch(error => {
-            if(error.response.status && error.response.status===400)
+            if(error.response.status && error.response.status===500)
             NotificationManager.error("Bad Request");
             else NotificationManager.error("Something Went Wrong");
             this.setState({ errors: error })
