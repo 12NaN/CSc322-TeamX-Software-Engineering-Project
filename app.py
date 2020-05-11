@@ -128,6 +128,19 @@ class GroupMembers(db.Model):
 
     def __repr__(self):
         return f"GroupMembers('{self.group_id}')"
+    
+class Poll(db.Model):
+    poll_id = db.Column(db.Integer, primary_key=True)
+    desc = db.Column(db.String(100), nullable=False)
+    group_id = db.Column(db.Integer, db.ForeignKey(
+        'groups.group_id'), nullable=False)
+        
+class PollOptions(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    option = db.Column(db.String(100), nullable=False)
+    poll_id = db.Column(db.Integer, db.ForeignKey(
+        'poll.poll_id'), nullable=False)
+    count = db.Column(db.Integer, nullable=True)
 
 # This class creates the Post table in SQLITE
 
@@ -154,11 +167,12 @@ class Post(db.Model):
                             default=datetime.utcnow)
     content = db.Column(db.Text, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_name = db.Column(db.String(20), unique=True, nullable=False)
     group_id = db.Column(db.Integer, db.ForeignKey(
         'groups.group_id'), nullable=False)
 
     def __repr__(self):
-        return f"Post('{self.title}', '{self.content}', '{self.user_id}', '{self.group_id}, '{self.date_posted}')"
+        return f"Post('{self.title}', '{self.content}', '{self.user_id}', '{self.user_name}', {self.group_id}, '{self.date_posted}')"
 
 # This class creates the User table in SQLITE
 
@@ -215,7 +229,7 @@ class GroupMemSchema(ma.SQLAlchemySchema):
 
 class PostSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
-        fields = ('title', 'date_posted', 'content', 'user_id', 'group_id')
+        fields = ('title', 'date_posted', 'content', 'user_id', 'user_name', 'group_id')
 
 
 class NotificationSchema(ma.SQLAlchemySchema):
@@ -238,7 +252,16 @@ class BlackListSchema(ma.SQLAlchemySchema):
     class Meta:
         fields = ('user_id', 'user_name')
 
+class PollSchema():
+    class Meta:
+        fields = ('desc', 'group_id')
 
+class PollOptionsSchema():
+    class Meta:
+        fields = ('id', 'option', 'poll_id', 'count')
+
+    
+        
 app.config['JWT_SECRET_KEY'] = 'secret'
 # socketIo = SocketIO(app, cors_allowed_origins="*")
 
@@ -435,18 +458,32 @@ def approve():
 @app.route("/users/<user_id>", methods=['GET'])
 def profile(user_id):
     user = User.query.filter_by(id=user_id)
-    # group = Groups.query.filter_by(group_id=id)
+    users = User.query.all()
+    black = BlackBox.query.filter_by(user_id=user_id)
+    white = WhiteBox.query.filter_by(user_id=user_id)
+    group = Groups.query
     groupMem = GroupMembers.query.filter_by(user_id=user_id)
+    print(groupMem)
+    print("helllllllllllllllo")
+    blk = BlackBoxSchema(many=True)
+    wht = WhiteBoxSchema(many=True)
     us = UserSchema(many=True)
-    # g = GroupSchema(many=True)
+    us2 = UserSchema(many = True)
+    g = GroupSchema(many=True)
     gM = GroupMemSchema(many=True)
     output = us.dump(user)
-    # output2 = g.dump(group)
-    output3 = gM.dump(groupMem)
+    output2 = wht.dump(white)
+    output3 = blk.dump(black)
+    output4 = g.dump(group)
+    output5 = gM.dump(groupMem)
+    output6 = us2.dump(users)
     result = {
-        'User': output
-        # 'Group': output2,
-        # 'GroupMem': output3
+        'User': output,
+        'White': output2,
+        'Black': output3,
+        'Groups': output4,
+        'GroupMembers': output5,
+        'Users': output6
     }
     return jsonify(result)
 
@@ -559,6 +596,7 @@ def posts(group_id):
             content = content.replace(stripped_line, '*'*len(stripped_line))
     taboo.close()
     user = request.json['user_id']
+    name = request.json['user_name']
     group = request.json['group_id']
 
     if reduce_points != 0:  # If the reduction_points is < 0, then reduce the necessary points to the user who used the taboo words
@@ -572,7 +610,7 @@ def posts(group_id):
 #    date = request.json['date_posted']
     # Adding the new post along with the time stamp
     new_post = Post(title=title, date_posted=date_posted,
-                    content=content, user_id=user, group_id=group)
+                    content=content, user_id=user, user_name=name, group_id=group)
     db.session.add(new_post)
     db.session.commit()
 
@@ -602,6 +640,18 @@ def updateTodo(group_id):
     print("pushed")
     return jsonify(data)
 
+@app.route('/projects/<group_id>/createpoll', methods=['POST'])
+def createPoll(group_id):
+    poll = PollSchema()
+    polloptions = PollOptionsSchema()
+    group_id = request.json['group_id']
+    desc = request.json['description'] 
+    polls = request.json['polls']
+    print(polls)
+    print(group_id)
+    results = poll.dump(Poll.query.filter_by(group_id=group_id))
+    return jsonify({'result': results})
+
 
 # This route redirects the account function to be used at the profile page
 
@@ -624,11 +674,11 @@ def delete_table_data():
     db.session.query(Todo).delete()
     db.session.query(WhiteBox).delete()
     db.session.commit()
-"""
+
 
 # Populates rows in the following tables.
 
-"""
+
 def populate_table_data():
 
     # populate rows for user table.

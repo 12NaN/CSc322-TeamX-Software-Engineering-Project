@@ -1,11 +1,17 @@
 import React, { Component } from "react";
 import ReactDOM from "react-dom";
+import axios from 'axios'
+
 
 class PollForm extends Component {
-  state = {
-    polls: [{ date: "", startTime: "", endTime: "" }],
-    description: ""
-  };
+  constructor(props) {
+        super(props);
+        this.state = {
+          group_id: '',   //This is the issue -> this.props.match.params['id'],
+          polls: [{ date: "", startTime: "", endTime: "" }],
+          description: ""
+    };
+  }
 
   handleChange = e => {
     if (["date", "startTime", "endTime"].includes(e.target.className)) {
@@ -29,14 +35,28 @@ class PollForm extends Component {
   }
   handleSubmit = e => {
     e.preventDefault();
+    axios.post(`/projects/${this.state.group_id}/createpoll}`, {
+      group_id: this.state.group_id,
+      polls: this.state.polls,
+      description: this.state.description
+    })
+    .then((r) =>{
+      console.log(r)
+    })
+    
   }
+  componentDidMount(){
+
+ 
+  }
+
   render() {
     
     let { description, polls } = this.state;
     return (
 
       <form onSubmit={this.handleSubmit} onChange={this.handleChange}>
-        
+        <h1>Schedule a Meeting Poll</h1>
         <label htmlFor="description">Description: </label>
         
         <input
