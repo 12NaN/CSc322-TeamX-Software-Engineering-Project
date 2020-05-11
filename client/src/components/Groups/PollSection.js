@@ -18,8 +18,8 @@ class PollSection extends Component {
 
         return (
             <div>
-                <h1>Available Polls:</h1>
-                 <Link to={{pathname: '/projects/' + this.props.group + '/createpoll', state: {groupsid: this.props.group}}}>
+                <h1>Available Polls</h1>
+                 <Link style={{"backgroundColor": "purple"}} className='btn btn-dark btn-block'to={{pathname: '/projects/' + this.props.group + '/createpoll'}}>
                             Create Poll
                     </Link>    
             </div>
