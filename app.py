@@ -128,23 +128,27 @@ class GroupMembers(db.Model):
 
     def __repr__(self):
         return f"GroupMembers('{self.group_id}')"
-    
+
+
 class Poll(db.Model):
     poll_id = db.Column(db.Integer, primary_key=True)
     desc = db.Column(db.String(100), nullable=False)
     group_id = db.Column(db.Integer, db.ForeignKey(
         'groups.group_id'), nullable=False)
+
     def __repr__(self):
         return f"Poll('{self.desc}', '{self.group_id}')"
-        
+
+
 class PollOptions(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     option = db.Column(db.String(100), nullable=False)
     poll_id = db.Column(db.Integer, db.ForeignKey(
         'poll.poll_id'), nullable=False)
     count = db.Column(db.Integer, nullable=True)
+
     def __repr__(self):
-        return f"PollOptions('{self.option}', '{self.poll_id}', '{self.count}')"    
+        return f"PollOptions('{self.option}', '{self.poll_id}', '{self.count}')"
 
 # This class creates the Post table in SQLITE
 
@@ -233,7 +237,8 @@ class GroupMemSchema(ma.SQLAlchemySchema):
 
 class PostSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
-        fields = ('title', 'date_posted', 'content', 'user_id', 'user_name', 'group_id')
+        fields = ('title', 'date_posted', 'content',
+                  'user_id', 'user_name', 'group_id')
 
 
 class NotificationSchema(ma.SQLAlchemySchema):
@@ -256,16 +261,17 @@ class BlackListSchema(ma.SQLAlchemySchema):
     class Meta:
         fields = ('user_id', 'user_name')
 
+
 class PollSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         fields = ('desc', 'group_id')
+
 
 class PollOptionsSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         fields = ('option', 'poll_id', 'count')
 
-    
-        
+
 app.config['JWT_SECRET_KEY'] = 'secret'
 # socketIo = SocketIO(app, cors_allowed_origins="*")
 
@@ -318,17 +324,21 @@ def register():
     if (user_name in banned_users):
         print("CURRENT_USER:", user_name, "HAS BEEN BLACK LISTED!")
         # Not sure what to return when a user is black listed, but this works without any erorrs...
-        return jsonify({"Error":"This user is banned from registering"})
+        return jsonify({"Error": "This user is banned from registering"})
 
     # The user_name is not black listed and is added to the database
     user = User(user_name=user_name, first_name=first_name, last_name=last_name, email=email,
-                    password=password, interest=interest, references=references, user_type=user_type, rating=rating)  # , created=created)
+                password=password, interest=interest, references=references, user_type=user_type, rating=rating)  # , created=created)
     db.session.add(user)
     db.session.commit()
-    notification = Notification(
-        id=3, group_id=NULL, sender_id=user.id, recipient_id=1, body=user.user_name + " just signed up and is awaiting your approval.")
 
-    db.session.add(notification)
+    last_item = Notification.query.order_by(
+        Notification.notif_id.desc()).first()
+    print(last_item.notif_id)
+    notification1 = Notification(
+        notif_id=last_item.notif_id+1, id=3, group_id=NULL, sender_id=user.id, recipient_id=1, body=user.user_name + " just signed up and is awaiting your approval.")
+
+    db.session.add(notification1)
     db.session.commit()
 
     result = {
@@ -424,13 +434,15 @@ def showNotifications():
 @app.route('/notifications', methods=['POST'])
 def approve():
     print("HELLO")
+    notif_id = request.json['notif_id']
     id = request.json['id']
     sender_id = request.json['sender_id']
     recipient_id = request.json['recipient_id']
     body = "You have been approved"
+    print(notif_id)
 
     notification = Notification(
-        id=id, group_id=NULL, sender_id=sender_id, recipient_id=recipient_id, body=body)
+        notif_id=notif_id, id=id, group_id=NULL, sender_id=sender_id, recipient_id=recipient_id, body=body)
     db.session.add(notification)
     db.session.commit()
     msg = Message('You have been approved',
@@ -463,7 +475,7 @@ def profile(user_id):
     blk = BlackBoxSchema(many=True)
     wht = WhiteBoxSchema(many=True)
     us = UserSchema(many=True)
-    us2 = UserSchema(many = True)
+    us2 = UserSchema(many=True)
     g = GroupSchema(many=True)
     gM = GroupMemSchema(many=True)
     output = us.dump(user)
@@ -535,12 +547,12 @@ def login():
     banned_emails = getBlackListEmails(email)
 
     if (email in banned_emails):
-        print(email," IS BANNED! --py")
+        print(email, " IS BANNED! --py")
         return jsonify({"error": "This email is banned!"})
 
     if user and bcrypt.check_password_hash(user.password, password):
         access_token = create_access_token(identity={'id': user.id, 'user_name': user.user_name,
-                                                    'first_name': user.first_name, 'last_name': user.last_name, 'email': user.email, 'rating': user.rating, 'id': user.id})
+                                                     'first_name': user.first_name, 'last_name': user.last_name, 'email': user.email, 'rating': user.rating, 'id': user.id})
         result = access_token
     else:
         result = jsonify({"error": "Invalid username and password"})
@@ -640,12 +652,13 @@ def updateTodo(group_id):
     print("pushed")
     return jsonify(data)
 
+
 @app.route('/projects/<group_id>/createpoll', methods=['POST'])
 def createPoll(group_id):
     poll = PollSchema()
     polloptions = PollOptionsSchema()
     group_id = request.json['group_id']
-    desc = request.json['description'] 
+    desc = request.json['description']
     creation_poll = Poll(desc=desc, group_id=group_id)
     db.session.add(creation_poll)
     db.session.commit()
@@ -657,15 +670,16 @@ def createPoll(group_id):
         print(date)
         print(start)
         print(end)
-        new_poll = PollOptions(option= 'On '+date+': Start -'+start+' End - '+end, poll_id = cur_poll, count = 0 )
+        new_poll = PollOptions(
+            option='On '+date+': Start -'+start+' End - '+end, poll_id=cur_poll, count=0)
         db.session.add(new_poll)
         db.session.commit()
-    new_poll = PollOptions(option= 'None of these choices.', poll_id = cur_poll, count = 0 )
+    new_poll = PollOptions(option='None of these choices.',
+                           poll_id=cur_poll, count=0)
     db.session.add(new_poll)
     db.session.commit()
     results = poll.dump(Poll.query.filter_by(group_id=group_id))
     return jsonify({'result': results})
-
 
 
 # This route redirects the account function to be used at the profile page
@@ -676,10 +690,12 @@ def account():
     image_file = url_for(
         'static', filename='client/src/components/ProfileImages/user.jpg')
 
-## SUPPLEMENTARY FUNCTIONS FOR ACCOUNT RETRIEVAL-------------------------
+# SUPPLEMENTARY FUNCTIONS FOR ACCOUNT RETRIEVAL-------------------------
 # Making get WhiteBox and BlackBox Sooon...
 
 # Returns the list of black_listed_user names given the target user_name
+
+
 def getBlackListUsers(user_name):
     # Getting the rows within the black_list table
     find_user = BlackListSchema(many=True)
@@ -689,10 +705,12 @@ def getBlackListUsers(user_name):
 
     # Getting the blacklisted user_names and returning them in a list
     return [each_user['user_name'] for each_user in banned_list]
-    
+
 # Returns the list of black_listed emails given a user_email
+
+
 def getBlackListEmails(user_email):
-    if len(user_email) == 0: # Base case
+    if len(user_email) == 0:  # Base case
         return None
 
     # Getting the rows within the user table
@@ -703,17 +721,20 @@ def getBlackListEmails(user_email):
     # Getting the target user names based on the given email
     email_to_user_name = [account['user_name'] for account in target_user]
 
-    # Getting the banned users associated with each target user 
+    # Getting the banned users associated with each target user
     banned_users = [getBlackListUsers(i) for i in email_to_user_name]
     # Folding the banned users list from the given email
-    black_list = [user_name for banned_list in banned_users  for user_name in banned_list]
+    black_list = [
+        user_name for banned_list in banned_users for user_name in banned_list]
 
-    if len(black_list) == 0 or black_list is None: # There were no emails associated with the target user from email
-        print(user_email," IS NOT BANNED!")
+    # There were no emails associated with the target user from email
+    if len(black_list) == 0 or black_list is None:
+        print(user_email, " IS NOT BANNED!")
         return []
-    else:# We found users in the black_list by the given target user, then return the email itself
-        print(user_email," IS BANNED!")
-        return [user_email]  
+    else:  # We found users in the black_list by the given target user, then return the email itself
+        print(user_email, " IS BANNED!")
+        return [user_email]
+
 
 # Deletes all rows from the following tables. BlackBox, BlackList, Groups, User, WhiteBox
 """
