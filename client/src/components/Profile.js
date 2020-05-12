@@ -52,14 +52,17 @@ class Profile extends Component {
             g.push(res.data['Groups'][i]);
           }
       }
-      let uw = [];
+      var uw = [];
+      console.log(res.data['White'])
       for(let i = 0; i < res.data['Users'].length; i++){
         for(let j = 0; j < res.data['White'].length; j++)
           if(res.data['Users'][i]['id'] == res.data['White'][j]['whtbxd_prsn_id'])
           {
-            uw.push(res.data['User'][i]);
+            //console.log(res.data['Users'][i])
+            uw.push(res.data['Users'][i]);
           }
       }
+      console.log(uw)
       let ub = [];
       console.log(res.data['Users'])
       console.log(res.data['Black'])
@@ -81,9 +84,9 @@ class Profile extends Component {
       return res;
     })
   }
-
   render() {
     if(!this.state.data) return null;
+      console.log(this.state.blk)
       let group = this.state.groups.map((i) =>
         <Cards name={i['group_name']} rating={i['rating']} id={i['group_id']} type={"project"}/>
       )

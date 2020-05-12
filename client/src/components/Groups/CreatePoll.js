@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import ReactDOM from "react-dom";
 import axios from 'axios'
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
@@ -6,15 +7,11 @@ import 'react-notifications/lib/notifications.css';
 class PollForm extends Component {
   constructor(props) {
         super(props);
-        console.log(this.props)
-        console.log(this.props.location.state["group_id"])
-        
         this.state = {
           group_id: '',   
           polls: [{ date: "", startTime: "", endTime: "" }],
           description: ""
-        };
-
+    };
   }
 
   handleChange = e => {
@@ -94,7 +91,7 @@ class PollForm extends Component {
           name="description"
           id="description"
           value={description}
-          className="form-control " rows="3"
+          class="form-control " rows="3"
         />
         <button onClick={this.addpoll} type='button' style={{"backgroundColor": "purple"}} className="btn btn-dark">Add New Option</button>
         <br/><br/>
@@ -103,8 +100,8 @@ class PollForm extends Component {
             startTimeId = `startTime-${idx}`,
             endTimeId = `endTime-${idx}`;
           return (
-            <div key={idx} className="form-group row">
-              <div className="col-3">
+            <div key={idx} class="form-group row">
+              <div class="col-3">
                 <label htmlFor={pollid}>{`Poll Option ${idx + 1}`}: </label>
               <input
                 type="date"
@@ -117,7 +114,7 @@ class PollForm extends Component {
               />
               </div>
               
-              <div className="col-2">
+              <div class="col-2">
               <label htmlFor={startTimeId}>Start Time</label>
               <input
                 type="time"
@@ -129,7 +126,7 @@ class PollForm extends Component {
                 
               />
               </div>
-              <div className="col-2">
+              <div class="col-2">
               <label htmlFor={endTimeId}>End Time </label>
               <input
                 type="time"
@@ -157,3 +154,7 @@ class PollForm extends Component {
 }
 
 export default PollForm;
+
+
+const rootElement = document.getElementById("root");
+ReactDOM.render(<PollForm />, rootElement);

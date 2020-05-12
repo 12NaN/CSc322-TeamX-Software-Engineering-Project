@@ -101,7 +101,7 @@ class Group extends Component {
                 <hr></hr>
                 <Sections sectionName="Members" privacy={localStorage && this.state.memNames.length != 0 && localStorage.usertoken && this.state.memNames.includes(this.state.user_id)  ? false : this.state.visi_members} component={<Members members={this.state.members}/>}/>
                 <hr></hr>
-                <Sections sectionName="Tasks" privacy={localStorage && this.state.memNames.length != 0 && localStorage.usertoken && this.state.memNames.includes(this.state.user_id)  ? false : this.state.visi_posts} component={<Todo/>}/>
+                <Sections sectionName="Tasks" privacy={localStorage && this.state.memNames.length != 0 && localStorage.usertoken && this.state.memNames.includes(this.state.user_id)  ? false : this.state.visi_posts} component={<Todo group = {this.state.id}/>}/>
                 <hr></hr>
                 <Sections sectionName="Poll" privacy={localStorage && this.state.memNames.length != 0 && localStorage.usertoken && this.state.memNames.includes(this.state.user_id)  ? false : this.state.visi_posts} component={<PollSection group= {this.state.id}/>}/>
                 <hr></hr>

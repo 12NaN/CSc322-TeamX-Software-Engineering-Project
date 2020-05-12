@@ -263,8 +263,9 @@ class PollSchema(ma.SQLAlchemyAutoSchema):
 class PollOptionsSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         fields = ('option', 'poll_id', 'count')
-
-    
+class TodoSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        fields = ('id', 'text', 'user_id', 'status', 'group_id')
         
 app.config['JWT_SECRET_KEY'] = 'secret'
 # socketIo = SocketIO(app, cors_allowed_origins="*")
@@ -490,19 +491,23 @@ def groupsPage(id):
     groupMem = GroupMembers.query.filter_by(group_id=id)
     users = User.query.all()
     posts = Post.query.filter_by(group_id=id)
+    todo = Todo.query.filter_by(group_id=id)
     u = UserSchema(many=True)
     g = GroupSchema(many=True)
     gM = GroupMemSchema(many=True)
     p = PostSchema(many=True)
+    t = TodoSchema(many=True)
     output = g.dump(group)
     output2 = gM.dump(groupMem)
     output3 = u.dump(users)
     output4 = p.dump(posts)
+    output5 = t.dump(todo)
     result = {
         'Group': output,
         'GroupMembers': output2,
         'Users': output3,
-        'Posts': output4
+        'Posts': output4,
+        'Todo': output5
     }
     return jsonify(result)
 
@@ -562,7 +567,7 @@ def removeTodo(group_id, item_id):
 @app.route('/projects/<group_id>', methods=['GET'])
 def getTodo(group_id):
     todo = Todo.query.filter_by(group_id=group_id)
-    to = todoSchema(many=True)
+    to = TodoSchema(many=True)
     output = to.dump(todo)
 
     result = {
