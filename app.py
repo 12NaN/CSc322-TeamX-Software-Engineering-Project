@@ -150,8 +150,7 @@ class PollOptions(db.Model):
 
 
 class Notification(db.Model):
-    notif_id = db.Column(db.Integer, primary_key=True)
-    id = db.Column(db.Integer)
+    id = db.Column(db.Integer, primary_key=True)
     group_id = db.Column(db.Integer, db.ForeignKey(
         'groups.group_id', ondelete="CASCADE"))
     sender_id = db.Column(db.Integer, db.ForeignKey(
@@ -460,8 +459,7 @@ def profile(user_id):
     white = WhiteBox.query.filter_by(user_id=user_id)
     group = Groups.query
     groupMem = GroupMembers.query.filter_by(user_id=user_id)
-    print(groupMem)
-    print("helllllllllllllllo")
+    print("Searching for Profile")
     blk = BlackBoxSchema(many=True)
     wht = WhiteBoxSchema(many=True)
     us = UserSchema(many=True)
@@ -540,16 +538,18 @@ def profilesAndGroups():
 def login():
     email = request.get_json()['email']
     password = request.get_json()['password']
+    
     result = ""
 
     user = User.query.filter_by(email=str(email)).first()
+    hashed_pass = bcrypt.generate_password_hash(user.password)
     banned_emails = getBlackListEmails(email)
 
     if (email in banned_emails):
         print(email," IS BANNED! --py")
         return jsonify({"error": "This email is banned!"})
-
-    if user and bcrypt.check_password_hash(user.password, password):
+    
+    if user and bcrypt.check_password_hash(hashed_pass, password):
         access_token = create_access_token(identity={'id': user.id, 'user_name': user.user_name,
                                                     'first_name': user.first_name, 'last_name': user.last_name, 'email': user.email, 'rating': user.rating, 'id': user.id})
         result = access_token
