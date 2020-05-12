@@ -145,17 +145,17 @@ class PollOptions(db.Model):
     option = db.Column(db.String(100), nullable=False)
     poll_id = db.Column(db.Integer, db.ForeignKey(
         'poll.poll_id'), nullable=False)
-    count = db.Column(db.Integer, nullable=True)
+    votes = db.Column(db.Integer, nullable=True)
 
     def __repr__(self):
-        return f"PollOptions('{self.option}', '{self.poll_id}', '{self.count}')"
+        return f"PollOptions('{self.option}', '{self.poll_id}', '{self.votes}')"
 
 # This class creates the Post table in SQLITE
 
 
 class Notification(db.Model):
     notif_id = db.Column(db.Integer, primary_key=True)
-    id = db.Column(db.Integer)
+    id = db.Column(db.Integer, primary_key=True)
     group_id = db.Column(db.Integer, db.ForeignKey(
         'groups.group_id', ondelete="CASCADE"))
     sender_id = db.Column(db.Integer, db.ForeignKey(
@@ -264,12 +264,17 @@ class BlackListSchema(ma.SQLAlchemySchema):
 
 class PollSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
-        fields = ('desc', 'group_id')
+        fields = ('poll_id', 'desc', 'group_id')
 
 
 class PollOptionsSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
-        fields = ('option', 'poll_id', 'count')
+        fields = ('id', 'option', 'poll_id', 'votes')
+
+
+class TodoSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        fields = ('id', 'text', 'user_id', 'status', 'group_id')
 
 
 app.config['JWT_SECRET_KEY'] = 'secret'
@@ -470,8 +475,7 @@ def profile(user_id):
     white = WhiteBox.query.filter_by(user_id=user_id)
     group = Groups.query
     groupMem = GroupMembers.query.filter_by(user_id=user_id)
-    print(groupMem)
-    print("helllllllllllllllo")
+    print("Searching for Profile")
     blk = BlackBoxSchema(many=True)
     wht = WhiteBoxSchema(many=True)
     us = UserSchema(many=True)
@@ -502,20 +506,30 @@ def groupsPage(id):
     groupMem = GroupMembers.query.filter_by(group_id=id)
     users = User.query.all()
     posts = Post.query.filter_by(group_id=id)
+    polls = Poll.query.filter_by(group_id=id)
+    pollopts = PollOptions.query.join(
+        Poll, PollOptions.poll_id == Poll.poll_id).filter_by(group_id=id)
     u = UserSchema(many=True)
     g = GroupSchema(many=True)
     gM = GroupMemSchema(many=True)
     p = PostSchema(many=True)
+    pl = PollSchema(many=True)
+    plo = PollOptionsSchema(many=True)
     output = g.dump(group)
     output2 = gM.dump(groupMem)
     output3 = u.dump(users)
     output4 = p.dump(posts)
+    output5 = pl.dump(polls)
+    output6 = plo.dump(pollopts)
     result = {
         'Group': output,
         'GroupMembers': output2,
         'Users': output3,
-        'Posts': output4
+        'Posts': output4,
+        'Polls': output5,
+        "PollOptions": output6
     }
+    print(result['PollOptions'])
     return jsonify(result)
 
 
@@ -541,15 +555,14 @@ def profilesAndGroups():
 def login():
     email = request.get_json()['email']
     password = request.get_json()['password']
+
     result = ""
 
     user = User.query.filter_by(email=str(email)).first()
     banned_emails = getBlackListEmails(email)
-
     if (email in banned_emails):
         print(email, " IS BANNED! --py")
         return jsonify({"error": "This email is banned!"})
-
     if user and bcrypt.check_password_hash(user.password, password):
         access_token = create_access_token(identity={'id': user.id, 'user_name': user.user_name,
                                                      'first_name': user.first_name, 'last_name': user.last_name, 'email': user.email, 'rating': user.rating, 'id': user.id})
@@ -574,7 +587,7 @@ def removeTodo(group_id, item_id):
 @app.route('/projects/<group_id>', methods=['GET'])
 def getTodo(group_id):
     todo = Todo.query.filter_by(group_id=group_id)
-    to = todoSchema(many=True)
+    to = TodoSchema(many=True)
     output = to.dump(todo)
 
     result = {
@@ -671,16 +684,52 @@ def createPoll(group_id):
         print(start)
         print(end)
         new_poll = PollOptions(
-            option='On '+date+': Start -'+start+' End - '+end, poll_id=cur_poll, count=0)
+            option='On '+date+': Start -'+start+' End - '+end, poll_id=cur_poll, votes=0)
         db.session.add(new_poll)
         db.session.commit()
     new_poll = PollOptions(option='None of these choices.',
-                           poll_id=cur_poll, count=0)
+                           poll_id=cur_poll, votes=0)
     db.session.add(new_poll)
     db.session.commit()
     results = poll.dump(Poll.query.filter_by(group_id=group_id))
     return jsonify({'result': results})
 
+
+@app.route('/projects/<group_id>/poll/<poll_id>', methods=['GET'])
+def getpoll(group_id, poll_id):
+    placeholder = poll_id
+    polls = Poll.query.filter_by(poll_id=placeholder)
+    pollopts = PollOptions.query.join(
+        Poll, PollOptions.poll_id == Poll.poll_id).filter_by(poll_id=placeholder)
+    pl = PollSchema(many=True)
+    plo = PollOptionsSchema(many=True)
+    output1 = pl.dump(polls)
+    output2 = plo.dump(pollopts)
+    result = {
+        'Polls': output1,
+        "PollOptions": output2
+    }
+    print(result['PollOptions'])
+    print(result['Polls'])
+    return jsonify(result)
+
+
+@app.route('/projects/<group_id>/poll/<poll_id>', methods=['POST'])
+def pollvote(group_id, poll_id):
+    placeholder = poll_id
+    polloptions = PollOptionsSchema()
+    data = request.json['NewPollData']
+    pollopts = PollOptions.query.filter_by(poll_id=placeholder)
+    pl = PollOptionsSchema(many=True)
+    inputinto = pl.dump(pollopts)
+    print(inputinto[0]['id'])
+    print(data)
+    for i in range(len(data)):
+        update = PollOptions.query.filter_by(id=inputinto[i]['id']).first()
+        update.votes = data[i]['votes']
+        db.session.commit()
+    results = polloptions.dump(Poll.query.filter_by(group_id=group_id))
+    return jsonify({'result': results})
 
 # This route redirects the account function to be used at the profile page
 
