@@ -150,6 +150,7 @@ class PollOptions(db.Model):
 
 
 class Notification(db.Model):
+    notif_id = db.Column(db.Integer, primary_key=True)
     id = db.Column(db.Integer, primary_key=True)
     group_id = db.Column(db.Integer, db.ForeignKey(
         'groups.group_id', ondelete="CASCADE"))
