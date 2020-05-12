@@ -543,14 +543,11 @@ def login():
     result = ""
 
     user = User.query.filter_by(email=str(email)).first()
-    hashed_pass = bcrypt.generate_password_hash(user.password)
     banned_emails = getBlackListEmails(email)
-
     if (email in banned_emails):
         print(email," IS BANNED! --py")
         return jsonify({"error": "This email is banned!"})
-    
-    if user and bcrypt.check_password_hash(hashed_pass, password):
+    if user and bcrypt.check_password_hash(user.password, password):
         access_token = create_access_token(identity={'id': user.id, 'user_name': user.user_name,
                                                     'first_name': user.first_name, 'last_name': user.last_name, 'email': user.email, 'rating': user.rating, 'id': user.id})
         result = access_token
