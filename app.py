@@ -665,6 +665,9 @@ def createPoll(group_id):
         new_poll = PollOptions(option= 'On '+date+': Start -'+start+' End - '+end, poll_id = cur_poll, count = 0 )
         db.session.add(new_poll)
         db.session.commit()
+    new_poll = PollOptions(option= 'None of these choices.', poll_id = cur_poll, count = 0 )
+    db.session.add(new_poll)
+    db.session.commit()
     results = poll.dump(Poll.query.filter_by(group_id=group_id))
     return jsonify({'result': results})
 
