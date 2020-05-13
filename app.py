@@ -148,7 +148,33 @@ class PollOptions(db.Model):
         return f"PollOptions('{self.option}', '{self.poll_id}', '{self.votes}')"
 
 # This class creates the Post table in SQLITE
+class VoteHandle(db.Model):
+    vote_id = db.Column(db.Integer, primary_key=True)
+    desc = db.Column(db.String(300), nullable=False) 
+    user_id_issuer = db.Column(db.Integer, db.ForeignKey(
+        'user.id'), nullable=False) 
+    user_id_subject = db.Column(db.Integer, db.ForeignKey(
+        'user.id'), nullable=True)
+    group_id_subject = db.Column(db.Integer, db.ForeignKey(
+        'groups.group_id'), nullable=True)
+    vote_type = db.Column(db.Integer, nullable=False) 
+    # 0=>Compliment, 1=>Warn, 2=>Kick, 3=>GroupClosure, 4=>VoteforSU  
+    vote_yes = db.Column(db.Integer, nullable=True)
+    vote_no = db.Column(db.Integer, nullable=True)
+    status = db.Column(db.Integer, nullable=False) 
+    # 0=>inactive, 1=>active, 2=completed
+    def __repr__(self):
+        return f"VoteHandle('{self.vote_id}', '{self.desc}', '{self.user_id_issuer}', '{self.user_id_subject}', '{self.group_id_subject}', '{self.vote_type}', '{self.vote_yes}', '{self.vote_no}', '{self.status}')"
 
+class Voters(db.Model):
+    vote_id = db.Column(db.Integer, db.ForeignKey(
+        'vote_handle.vote_id'), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey(
+        'user.id'), primary_key=True)
+    status = db.Column(db.Integer, nullable=False)
+    # 0=>NoVote, 1=>Voted
+    def __repr__(self):
+        return f"Voters('{self.vote_id}', '{self.user_id}', '{self.status}')"
 
 class Notification(db.Model):
     notif_id = db.Column(db.Integer, primary_key=True)
@@ -264,7 +290,16 @@ class PollSchema(ma.SQLAlchemyAutoSchema):
 class PollOptionsSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         fields = ('id','option', 'poll_id', 'votes')
+        
+class VoteHandleSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        fields = ('vote_id', 'desc', 'user_id_issuer',
+                  'user_id_subject', 'group_id_subject', 'vote_type', 'vote_yes', 'vote_no', 'status')
 
+class VotersSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        fields = ('vote_id', 'user_id', 'status') 
+        
 class TodoSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         fields = ('id', 'text', 'user_id', 'status', 'group_id')
@@ -730,6 +765,44 @@ def pollvote(group_id, poll_id):
     results = polloptions.dump(Poll.query.filter_by(group_id=group_id))
     return jsonify({'result': results})
 
+@app.route('/projects/<group_id>/createissue/handler', methods=['GET'])
+def createissues(group_id):
+    placeholder = group_id
+    users = UserSchema()
+    members = User.query.join(GroupMembers, User.id==GroupMembers.user_id)
+    u = UserSchema(many=True)
+    output1 = u.dump(members)
+    print(output1)
+    results = {
+        "Users": output1
+    }
+    return jsonify(results)
+
+@app.route('/projects/<group_id>/createissue/handler', methods=['POST'])
+def issuedvote(group_id):
+    vote = VoteHandleSchema()
+    voters = VotersSchema()
+    group = request.json['group_id']
+    desc = request.json['description']
+    issuer = request.json['issuer_id'] 
+    members = request.json['user_list']
+    subject = request.json['subject_name']
+    vote_type = request.json['vote_type']
+    creation_vote = VoteHandle(desc = desc, user_id_issuer = issuer,
+                  user_id_subject=subject, group_id_subject=group, vote_type=vote_type, vote_yes=1, vote_no=0, status=1)
+    db.session.add(creation_vote)
+    db.session.commit()
+    cur_vote = db.session.query(db.func.max(VoteHandle.vote_id)).scalar()
+    for i in request.json['user_list']:
+        users_id = i['id']
+        print(users_id)
+        if(users_id != issuer):
+            new_voter = Voters(vote_id=cur_vote, user_id=users_id, status=0)
+            db.session.add(new_voter)
+            db.session.commit()
+
+    results = vote.dump(VoteHandle.query.filter_by(group_id_subject=group))
+    return jsonify({'result': results})
 
 # This route redirects the account function to be used at the profile page
 
