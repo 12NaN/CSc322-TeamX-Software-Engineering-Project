@@ -607,30 +607,28 @@ def posts(group_id):
         request.json['date_posted'], "%a, %d %b %Y %H:%M:%S %Z")
     print(date_posted)
     reduce_points = 0  # Amount of points to reduce if taboo word is found
-    penalty = 5  # Number of points to reduce if a taboo word is found within the title or content
+    penalty = 1  # Number of points to reduce if a taboo word is found within the title or content
+    words_found = []
     for line in taboo:
         stripped_line = line.strip()
         # print(stripped_line)
         if stripped_line in title:
             reduce_points -= penalty  # Reduce points if taboo is in title
-            print(stripped_line)
+            words_found.append(stripped_line)
             title = title.replace(stripped_line, '*'*len(stripped_line))
         if stripped_line in content:
             reduce_points -= penalty  # Reduce Reduce points if taboo is in content
-            print(stripped_line)
+            words_found.append(stripped_line)
             content = content.replace(stripped_line, '*'*len(stripped_line))
     taboo.close()
     user = request.json['user_id']
     name = request.json['user_name']
     group = request.json['group_id']
 
-    if reduce_points != 0:  # If the reduction_points is < 0, then reduce the necessary points to the user who used the taboo words
-        modify_user = User.query.get_or_404(
-            user)  # Might need exception handling
-        print("BEFORE", modify_user)  # Debugging
-        db.session.query(User).filter(User.id == user).update(
-            {User.rating: User.rating + reduce_points})  # Querying for the user data and updating
-        print("AFTER", modify_user)  # Debugging
+    if reduce_points < 0:  # If the reduction_points is < 0, then reduce the necessary points to the user who used the taboo words
+        print("POST VIOLATION:")
+        print(words_found)
+        updateRep(user, reduce_points)
 
 #    date = request.json['date_posted']
     # Adding the new post along with the time stamp
@@ -671,7 +669,27 @@ def createPoll(group_id):
     poll = PollSchema()
     polloptions = PollOptionsSchema()
     group_id = request.json['group_id']
+    taboo = open('taboo.txt', 'r')
     desc = request.json['description']
+    user_id = request.json['user_id']
+
+    reduce_points = 0  # Total amount of points to reduce if a taboo word is found
+    penalty = 1  # Number of points to reduce for each word found in the description
+    words_found = []
+    for line in taboo:
+        stripped_line = line.strip()
+        # print(stripped_line)
+        if stripped_line in desc:
+            reduce_points -= penalty  # Reduce points if taboo is in the poll description
+            desc = desc.replace(stripped_line, '*'*len(stripped_line))
+            words_found.append(stripped_line)
+    taboo.close()
+    # Penalizing the User for using a taboo word when creating a poll
+    if(reduce_points < 0):
+        print("POLL VIOLATION:")
+        print(words_found)
+        updateRep(user_id, reduce_points)
+
     creation_poll = Poll(desc=desc, group_id=group_id)
     db.session.add(creation_poll)
     db.session.commit()
@@ -740,7 +758,19 @@ def account():
         'static', filename='client/src/components/ProfileImages/user.jpg')
 
 # SUPPLEMENTARY FUNCTIONS FOR ACCOUNT RETRIEVAL-------------------------
-# Making get WhiteBox and BlackBox Sooon...
+# Updates the reputation points of a particular user given their id
+
+
+def updateRep(user_id, rep_points):
+    modify_user = User.query.get_or_404(
+        user_id)  # Might need exception handling
+    print("USER:\t", user_id)
+    print("PENALTY:\t", rep_points)
+    print("BEFORE", modify_user)  # Debugging
+    db.session.query(User).filter(User.id == user_id).update(
+        {User.rating: User.rating + rep_points})  # Querying for the user data and updating
+    print("AFTER", modify_user)  # Debugging
+    db.session.commit()
 
 # Returns the list of black_listed_user names given the target user_name
 
