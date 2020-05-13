@@ -155,7 +155,7 @@ class PollOptions(db.Model):
 
 class Notification(db.Model):
     notif_id = db.Column(db.Integer, primary_key=True)
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer)
     group_id = db.Column(db.Integer, db.ForeignKey(
         'groups.group_id', ondelete="CASCADE"))
     sender_id = db.Column(db.Integer, db.ForeignKey(
@@ -425,12 +425,17 @@ def profiles():
 
 @app.route('/notifications', methods=['GET'])
 def showNotifications():
+
     notifications = Notification.query.filter(Notification.sender_id)
+    users = User.query.order_by(User.id)
+    user = UserSchema(many=True)
+    output2 = user.dump(users)
     n = NotificationSchema(many=True)
     output = n.dump(notifications)
 
     result = {
         'Notifications': output,
+        'Users': output2
     }
 
     return jsonify(result)
@@ -446,10 +451,10 @@ def approve():
     body = "You have been approved"
     print(notif_id)
 
-    notification = Notification(
+    """notification = Notification(
         notif_id=notif_id, id=id, group_id=NULL, sender_id=sender_id, recipient_id=recipient_id, body=body)
     db.session.add(notification)
-    db.session.commit()
+    db.session.commit()"""
     msg = Message('You have been approved',
                   recipients=['bareval001@citymail.cuny.edu'])
 
@@ -827,11 +832,11 @@ def delete_table_data():
     db.session.query(Todo).delete()
     db.session.query(WhiteBox).delete()
     db.session.commit()
-
+"""
 
 # Populates rows in the following tables.
 
-
+"""
 def populate_table_data():
 
     # populate rows for user table.
@@ -962,14 +967,15 @@ def populate_table_data():
     db.session.add(todo2)
     db.session.add(todo3)
     db.session.add(todo4)
+
     notification1 = Notification(
-        id=1, sender_id=2, recipient_id=3, body='Hello Frank')
+        notif_id=1, id=1, sender_id=2, recipient_id=3, body='Hello Frank')
 
     notification2 = Notification(
-        id=2, sender_id=3, recipient_id=5, body='Hello Peter')
+        notif_id=2, id=2, sender_id=3, recipient_id=5, body='Hello Peter')
 
     notification3 = Notification(
-        id=3, sender_id=2, recipient_id=4, body='Hello Henry')
+        notif_id=3, id=3, sender_id=2, recipient_id=4, body='Hello Henry')
 
     db.session.add(notification1)
     db.session.add(notification2)
