@@ -613,6 +613,7 @@ def groupsPage(id):
     pollopts = PollOptions.query.join(
         Poll, PollOptions.poll_id == Poll.poll_id).filter_by(group_id=id)
     vote = VoteHandle.query.filter_by(group_id_subject=id)
+    todo = Todo.query.filter_by(group_id=id)
     u = UserSchema(many=True)
     g = GroupSchema(many=True)
     gM = GroupMemSchema(many=True)
@@ -620,6 +621,7 @@ def groupsPage(id):
     pl = PollSchema(many=True)
     plo = PollOptionsSchema(many=True)
     vt = VoteHandleSchema(many=True)
+    td = TodoSchema(many=True)
     output = g.dump(group)
     output2 = gM.dump(groupMem)
     output3 = u.dump(users)
@@ -627,6 +629,7 @@ def groupsPage(id):
     output5 = pl.dump(polls)
     output6 = plo.dump(pollopts)
     output7 = vt.dump(vote)
+    output8 = td.dump(todo)
     result = {
         'Group': output,
         'GroupMembers': output2,
@@ -634,7 +637,8 @@ def groupsPage(id):
         'Posts': output4,
         'Polls': output5,
         "PollOptions": output6,
-        'Vote': output7
+        'Vote': output7,
+        'Todo': output8
     }
     print(result['PollOptions'])
     return jsonify(result)
@@ -769,7 +773,7 @@ def addTodo(group_id):
                     user_id=user_id, status=status, group_id=group_id)
     db.session.add(new_todo)
     db.session.commit()
-
+    new_todo = Todo.query.filter(group_id==group_id)
     print("New Todo added")
     result = todo.dump(new_todo)
     return jsonify({'result': result})
