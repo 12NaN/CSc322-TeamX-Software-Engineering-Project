@@ -42,7 +42,7 @@ class PollForm extends Component {
 
   handleSubmit = e => {
     e.preventDefault();
-     if(this.state.description==='')
+     if(this.state.description===''|| this.state.polls.length === 0)
         {
             NotificationManager.warning("Please complete all fields.", 'ATTENTION');
             return false;

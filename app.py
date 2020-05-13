@@ -13,7 +13,8 @@ from flask_marshmallow import Marshmallow
 from marshmallow_sqlalchemy import ModelSchema
 from pymysql import NULL
 from flask_mail import Mail, Message
-
+import os.path
+from os import path
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'mysecret'
@@ -153,6 +154,38 @@ class PollOptions(db.Model):
 # This class creates the Post table in SQLITE
 
 
+class VoteHandle(db.Model):
+    vote_id = db.Column(db.Integer, primary_key=True)
+    desc = db.Column(db.String(300), nullable=False)
+    user_id_issuer = db.Column(db.Integer, db.ForeignKey(
+        'user.id'), nullable=False)
+    user_id_subject = db.Column(db.Integer, db.ForeignKey(
+        'user.id'), nullable=True)
+    group_id_subject = db.Column(db.Integer, db.ForeignKey(
+        'groups.group_id'), nullable=True)
+    vote_type = db.Column(db.Integer, nullable=False)
+    # 0=>Compliment, 1=>Warn, 2=>Kick, 3=>GroupClosure, 4=>VoteforSU
+    vote_yes = db.Column(db.Integer, nullable=True)
+    vote_no = db.Column(db.Integer, nullable=True)
+    status = db.Column(db.Integer, nullable=False)
+    # 0=>inactive, 1=>active, 2=completed
+
+    def __repr__(self):
+        return f"VoteHandle('{self.vote_id}', '{self.desc}', '{self.user_id_issuer}', '{self.user_id_subject}', '{self.group_id_subject}', '{self.vote_type}', '{self.vote_yes}', '{self.vote_no}', '{self.status}')"
+
+
+class Voters(db.Model):
+    vote_id = db.Column(db.Integer, db.ForeignKey(
+        'vote_handle.vote_id'), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey(
+        'user.id'), primary_key=True)
+    status = db.Column(db.Integer, nullable=False)
+    # 0=>NoVote, 1=>Voted
+
+    def __repr__(self):
+        return f"Voters('{self.vote_id}', '{self.user_id}', '{self.status}')"
+
+
 class Notification(db.Model):
     notif_id = db.Column(db.Integer, primary_key=True)
     id = db.Column(db.Integer)
@@ -270,6 +303,17 @@ class PollSchema(ma.SQLAlchemyAutoSchema):
 class PollOptionsSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         fields = ('id', 'option', 'poll_id', 'votes')
+
+
+class VoteHandleSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        fields = ('vote_id', 'desc', 'user_id_issuer',
+                  'user_id_subject', 'group_id_subject', 'vote_type', 'vote_yes', 'vote_no', 'status')
+
+
+class VotersSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        fields = ('vote_id', 'user_id', 'status')
 
 
 class TodoSchema(ma.SQLAlchemyAutoSchema):
@@ -608,32 +652,34 @@ def posts(group_id):
     taboo = open('taboo.txt', 'r')
     title = request.json['title']
     content = request.json['content']
-    date_posted = datetime.strptime(
-        request.json['date_posted'], "%a, %d %b %Y %H:%M:%S %Z")
-    print(date_posted)
-    reduce_points = 0  # Amount of points to reduce if taboo word is found
-    penalty = 1  # Number of points to reduce if a taboo word is found within the title or content
-    words_found = []
-    for line in taboo:
-        stripped_line = line.strip()
-        # print(stripped_line)
-        if stripped_line in title:
-            reduce_points -= penalty  # Reduce points if taboo is in title
-            words_found.append(stripped_line)
-            title = title.replace(stripped_line, '*'*len(stripped_line))
-        if stripped_line in content:
-            reduce_points -= penalty  # Reduce Reduce points if taboo is in content
-            words_found.append(stripped_line)
-            content = content.replace(stripped_line, '*'*len(stripped_line))
-    taboo.close()
     user = request.json['user_id']
     name = request.json['user_name']
     group = request.json['group_id']
 
+    date_posted = datetime.strptime(
+        request.json['date_posted'], "%a, %d %b %Y %H:%M:%S %Z")
+    print(date_posted)
+    reduce_points = 0  # Amount of points to reduce if taboo word is found
+    taboo_found = []
+    for line in taboo:
+        stripped_line = line.strip()
+        # print(stripped_line)
+        if stripped_line in title:
+            taboo_found.append(stripped_line)
+            title = title.replace(stripped_line, '*'*len(stripped_line))
+        if stripped_line in content:
+            taboo_found.append(stripped_line)
+            content = content.replace(stripped_line, '*'*len(stripped_line))
+    reduce_points = pointDeduction(name, taboo_found)
+    taboo.close()
+
+    violation = False
     if reduce_points < 0:  # If the reduction_points is < 0, then reduce the necessary points to the user who used the taboo words
         print("POST VIOLATION:")
-        print(words_found)
+        print(taboo_found)
+        print(reduce_points)
         updateRep(user, reduce_points)
+        violation = True
 
 #    date = request.json['date_posted']
     # Adding the new post along with the time stamp
@@ -645,7 +691,7 @@ def posts(group_id):
     print("Post_Added")
     result = post.dump(Post.query.filter_by(group_id=group_id))
     print(result)
-    return jsonify({'result': result})
+    return jsonify({'result': result, "clean": violation, "reduced": reduce_points})
 
 
 @app.route('/projects/<group_id>', methods=['POST'])
@@ -754,6 +800,47 @@ def pollvote(group_id, poll_id):
     results = polloptions.dump(Poll.query.filter_by(group_id=group_id))
     return jsonify({'result': results})
 
+
+@app.route('/projects/<group_id>/createissue/handler', methods=['GET'])
+def createissues(group_id):
+    placeholder = group_id
+    users = UserSchema()
+    members = User.query.join(GroupMembers, User.id == GroupMembers.user_id)
+    u = UserSchema(many=True)
+    output1 = u.dump(members)
+    print(output1)
+    results = {
+        "Users": output1
+    }
+    return jsonify(results)
+
+
+@app.route('/projects/<group_id>/createissue/handler', methods=['POST'])
+def issuedvote(group_id):
+    vote = VoteHandleSchema()
+    voters = VotersSchema()
+    group = request.json['group_id']
+    desc = request.json['description']
+    issuer = request.json['issuer_id']
+    members = request.json['user_list']
+    subject = request.json['subject_name']
+    vote_type = request.json['vote_type']
+    creation_vote = VoteHandle(desc=desc, user_id_issuer=issuer,
+                               user_id_subject=subject, group_id_subject=group, vote_type=vote_type, vote_yes=1, vote_no=0, status=1)
+    db.session.add(creation_vote)
+    db.session.commit()
+    cur_vote = db.session.query(db.func.max(VoteHandle.vote_id)).scalar()
+    for i in request.json['user_list']:
+        users_id = i['id']
+        print(users_id)
+        if(users_id != issuer):
+            new_voter = Voters(vote_id=cur_vote, user_id=users_id, status=0)
+            db.session.add(new_voter)
+            db.session.commit()
+
+    results = vote.dump(VoteHandle.query.filter_by(group_id_subject=group))
+    return jsonify({'result': results})
+
 # This route redirects the account function to be used at the profile page
 
 
@@ -763,6 +850,41 @@ def account():
         'static', filename='client/src/components/ProfileImages/user.jpg')
 
 # SUPPLEMENTARY FUNCTIONS FOR ACCOUNT RETRIEVAL-------------------------
+
+
+def pointDeduction(user_name, guilty_words):
+    if len(guilty_words) == 0 or "".join(guilty_words).isspace():
+        return 0
+    target_path = os.getcwd() + "/UserTaboos/" + user_name + "Taboo.txt"
+    if path.exists(target_path):
+        print("TABOO FILE FOUND")
+        with open(target_path, "r+") as current_file:
+            taboo_lines = set(current_file.read().splitlines())
+            content_lines = set([i.lower() for i in guilty_words])
+            check_repeats = list(content_lines.intersection(taboo_lines))
+
+            penalty = 0
+            if len(check_repeats) == 0:
+                for new_taboo in content_lines:
+                    if new_taboo not in taboo_lines:
+                        current_file.write(new_taboo.lower() + "\n")
+                        penalty -= 1
+                return penalty
+            else:
+                for new_taboo in content_lines:
+                    if new_taboo not in taboo_lines:
+                        current_file.write(new_taboo.lower() + "\n")
+                        penalty -= 1
+                return (len(check_repeats)*-5) + penalty
+        print("TABOO PROCESSED")
+    else:
+        print("FIRST TIME OFFENDER")
+        content_lines = set(guilty_words)
+        with open(target_path, "w") as current_file:
+            for new_taboo in content_lines:
+                current_file.write(new_taboo.lower() + "\n")
+        return -1 * len(content_lines)
+
 # Updates the reputation points of a particular user given their id
 
 

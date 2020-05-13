@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import {Form, Button, Card, ListGroup, ListItem} from 'react-bootstrap';
+import { NotificationContainer, NotificationManager } from 'react-notifications';
+import 'react-notifications/lib/notifications.css';
 import image from '../ProfileImages/user.png';
 import axios from 'axios';
 import postCards from './postCards';
@@ -35,7 +37,11 @@ class Forms extends Component {
               date_posted: this.state.date_posted,
             })
             .then((r) =>{
-                console.log(r)
+                if (r.data.clean == true){
+                    console.log("YOU SAID SOMETHING BAD!")
+                    NotificationManager.warning("Penalty: "+ r.data.reduced, "WARNING: TABOO WORD USED");
+                }
+
             })
             this.setState({
                 title: '',
@@ -86,6 +92,7 @@ class Forms extends Component {
       render() {
         const list = this.state.prevPosts.map((i) =>
             <div>
+              <NotificationContainer/>
                 <Card.Header>Username: {i['user_name']} <br/> Title: {i['title']} &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; &emsp; Date/Time Posted: {i['date_posted']}</Card.Header>
                 <Card.Body>
                     <blockquote className="blockquote mb-0">
