@@ -37,7 +37,7 @@ class Forms extends Component {
               date_posted: this.state.date_posted,
             })
             .then((r) =>{
-                if (r.data.clean == true){
+                if (r.data.violation == true){
                     console.log("YOU SAID SOMETHING BAD!")
                     NotificationManager.warning("Penalty: "+ r.data.reduced, "WARNING: TABOO WORD USED");
                 }

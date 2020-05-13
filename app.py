@@ -13,6 +13,8 @@ from flask_marshmallow import Marshmallow
 from marshmallow_sqlalchemy import ModelSchema
 from pymysql import NULL
 from flask_mail import Mail, Message
+import os.path
+from os import path
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'mysecret'
@@ -649,11 +651,12 @@ def groupsPage(id):
 
 @app.route('/', methods=['GET'])
 def profilesAndGroups():
-    users = User.query.order_by(User.rating).limit(3)
+    users = User.query.order_by(User.rating.desc()).limit(3)
     groups = Groups.query.order_by(Groups.rating).limit(3)
     user = UserSchema(many=True)
     group = GroupSchema(many=True)
     output = user.dump(users)
+    output.reverse()
     output2 = group.dump(groups)
 
     result = {
@@ -755,7 +758,7 @@ def posts(group_id):
     print("Post_Added")
     result = post.dump(Post.query.filter_by(group_id=group_id))
     print(result)
-    return jsonify({'result': result, "clean": violation, "reduced": reduce_points})
+    return jsonify({'result': result, "violation": violation, "reduced": reduce_points})
 
 
 @app.route('/projects/<group_id>/add-todo', methods=['POST'])
