@@ -558,25 +558,29 @@ def groupsPage(id):
     polls = Poll.query.filter_by(group_id=id)
     pollopts = PollOptions.query.join(
         Poll, PollOptions.poll_id == Poll.poll_id).filter_by(group_id=id)
+    vote = VoteHandle.query.filter_by(group_id_subject=id)
     u = UserSchema(many=True)
     g = GroupSchema(many=True)
     gM = GroupMemSchema(many=True)
     p = PostSchema(many=True)
     pl = PollSchema(many=True)
     plo = PollOptionsSchema(many=True)
+    vt = VoteHandleSchema(many=True)
     output = g.dump(group)
     output2 = gM.dump(groupMem)
     output3 = u.dump(users)
     output4 = p.dump(posts)
     output5 = pl.dump(polls)
     output6 = plo.dump(pollopts)
+    output7 = vt.dump(vote)
     result = {
         'Group': output,
         'GroupMembers': output2,
         'Users': output3,
         'Posts': output4,
         'Polls': output5,
-        "PollOptions": output6
+        "PollOptions": output6,
+        'Vote': output7
     }
     print(result['PollOptions'])
     return jsonify(result)
