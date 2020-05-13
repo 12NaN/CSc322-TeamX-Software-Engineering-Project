@@ -13,7 +13,8 @@ from flask_marshmallow import Marshmallow
 from marshmallow_sqlalchemy import ModelSchema
 from pymysql import NULL
 from flask_mail import Mail, Message
-
+import os.path
+from os import path
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'mysecret'
@@ -587,31 +588,32 @@ def posts(group_id):
     taboo = open('taboo.txt', 'r')
     title = request.json['title']
     content = request.json['content']
+    user = request.json['user_id']
+    name = request.json['user_name']
+    group = request.json['group_id']
+
     date_posted = datetime.strptime(
         request.json['date_posted'], "%a, %d %b %Y %H:%M:%S %Z")
     print(date_posted)
     reduce_points = 0  # Amount of points to reduce if taboo word is found
-    penalty = 1  # Number of points to reduce if a taboo word is found within the title or content
-    words_found = []
+    taboo_found = []
     for line in taboo:
         stripped_line = line.strip()
         # print(stripped_line)
         if stripped_line in title:
-            reduce_points -= penalty  # Reduce points if taboo is in title
-            words_found.append(stripped_line)
+            taboo_found.append(stripped_line)
             title = title.replace(stripped_line, '*'*len(stripped_line))
         if stripped_line in content:
-            reduce_points -= penalty  # Reduce Reduce points if taboo is in content
-            words_found.append(stripped_line)
+            taboo_found.append(stripped_line)
             content = content.replace(stripped_line, '*'*len(stripped_line))
+    reduce_points = pointDeduction(name, taboo_found)
     taboo.close()
-    user = request.json['user_id']
-    name = request.json['user_name']
-    group = request.json['group_id']
+
     violation = False
     if reduce_points < 0:  # If the reduction_points is < 0, then reduce the necessary points to the user who used the taboo words
         print("POST VIOLATION:")
-        print(words_found)
+        print(taboo_found)
+        print(reduce_points)
         updateRep(user, reduce_points)
         violation = True
 
@@ -738,6 +740,39 @@ def account():
         'static', filename='client/src/components/ProfileImages/user.jpg')
 
 ## SUPPLEMENTARY FUNCTIONS FOR ACCOUNT RETRIEVAL-------------------------
+def pointDeduction(user_name, guilty_words):
+    if len(guilty_words) == 0 or "".join(guilty_words).isspace():
+        return 0
+    target_path = os.getcwd() + "/UserTaboos/" + user_name + "Taboo.txt"
+    if path.exists(target_path):
+        print("TABOO FILE FOUND")
+        with open(target_path,"r+") as current_file:
+            taboo_lines = set(current_file.read().splitlines())
+            content_lines = set([i.lower() for i in guilty_words])
+            check_repeats = list(content_lines.intersection(taboo_lines))
+
+            penalty = 0
+            if len(check_repeats) == 0:
+                for new_taboo in content_lines:
+                    if new_taboo not in taboo_lines:
+                        current_file.write(new_taboo.lower()+ "\n")
+                        penalty-=1
+                return penalty
+            else:
+                for new_taboo in content_lines:
+                    if new_taboo not in taboo_lines:
+                        current_file.write(new_taboo.lower() + "\n")
+                        penalty -=1
+                return (len(check_repeats)*-5) + penalty
+        print("TABOO PROCESSED")
+    else:
+        print("FIRST TIME OFFENDER")
+        content_lines = set(guilty_words)
+        with open(target_path,"w") as current_file:
+            for new_taboo in content_lines:
+                current_file.write(new_taboo.lower() + "\n")
+        return -1 * len(content_lines)
+
 # Updates the reputation points of a particular user given their id
 def updateRep(user_id, rep_points):
     modify_user = User.query.get_or_404(user_id)  # Might need exception handling
