@@ -105,18 +105,29 @@ class Notifications extends Component {
     );
 
 
-    return (
-
-      listItems.filter(listItems => listItems.props.recipient_id == user).map(listItems => (
+    let render;
+    if (user == 1) {
+      render = <div>{listNotifs}</div>
+    }
+    else {
+      render = listItems.filter(listItems => listItems.props.recipient_id == user).map(listItems => (
         <div>
-          <h1 className="text-center">{userName}</h1>
+
 
           {listItems}
 
-          {listNotifs}
-
         </div>
-      )));
+      ))
+    }
+
+    return (
+      <div className="App">
+        <h1>
+          Hello {userName}
+        </h1>
+        {render}
+      </div>
+    );
 
 
 
