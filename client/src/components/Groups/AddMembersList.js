@@ -24,9 +24,7 @@ class AddMembersList extends Component {
         let members = this.state.users.map((i) =>
         <div>
             <Cards name={i["user_name"]} rating={i["rating"]} id={i["id"]} type={"user"}/>
-            <Link to={""}>
-                Invite
-            </Link>   
+            <Link style={{"padding": "10px","backgroundColor":"purple","height":"40px", "width":"185px"}} to={''} className="btn btn-primary">Invite</Link>
         </div>
         );
         return (
@@ -35,8 +33,8 @@ class AddMembersList extends Component {
                 <CardDeck>
                     {members}
                 </CardDeck>
-
-                <Link to={'/projects'} className="btn btn-primary">Go to group page</Link>
+                <br/>
+                <Link style={{"backgroundColor":"purple"}} to={'/projects'} className="btn btn-primary">Return to projects</Link>
             </div>
         );
     }

@@ -417,6 +417,7 @@ def create():
             rating: 0
 """
     group = GroupSchema(many=True)
+    groupM = GroupMemSchema(many=True)
     name = request.json['group_name']
     desc = request.json['group_desc']
     posts = bool(request.json['visi_post'])
@@ -428,13 +429,24 @@ def create():
                        visi_members=members, visi_eval=evaluate, visi_warn=warn, rating=rating)
     db.session.add(new_group)
     db.session.commit()
-
+    #obj = session.query(ObjectRes).order_by(ObjectRes.id.desc()).first()
+#    new_group_mem = GroupMembers(id=db.session.query(Groups.group_id).filter(group_name == name).first(), user_id = user_id)
+#    db.session.add(new_group_mem)
+#    db.session.commit()
     print("POSSSSSSSSSST")
     result = group.dump(Groups.query.filter_by(group_name=name))
-    print(result)
     return jsonify({'result': result})
 
-
+@app.route('/projects/create/mem', methods=['POST'])
+def createMem():
+    group = request.json['group_id']
+    user = request.json['user_id']
+    new_mem = GroupMembers(group_id=group, user_id=user)
+    db.session.add(new_mem)
+    db.session.commit()
+    mem = GroupMemSchema(many=True)
+    result = mem.dump(GroupMembers.query.filter_by(group_id=group))
+    return jsonify({"result":result})
 @app.route('/users', methods=['GET'])
 def profiles():
     users = User.query.order_by(User.rating)
@@ -1065,13 +1077,13 @@ def populate_table_data():
     db.session.add(todo3)
     db.session.add(todo4)
     notification1 = Notification(
-        id=1, sender_id=2, recipient_id=3, body='Hello Frank')
+        notif_id=1, id=1, group_id=3, sender_id=2, recipient_id=3, body='Hello Frank')
 
     notification2 = Notification(
-        id=2, sender_id=3, recipient_id=5, body='Hello Peter')
+        notif_id=2, id=2, group_id=3, sender_id=3, recipient_id=5, body='Hello Peter')
 
     notification3 = Notification(
-        id=3, sender_id=2, recipient_id=4, body='Hello Henry')
+        notif_id=3, id=3, group_id=3, sender_id=2, recipient_id=4, body='Hello Henry')
 
     db.session.add(notification1)
     db.session.add(notification2)
@@ -1082,11 +1094,10 @@ def populate_table_data():
 
     print("Done")
 """
-
 if __name__ == '__main__':
 
-    # delete_table_data()
-    # populate_table_data()
+    #delete_table_data()
+    #populate_table_data()
     app.run(debug=True)
 
    # socketIo.run(app)

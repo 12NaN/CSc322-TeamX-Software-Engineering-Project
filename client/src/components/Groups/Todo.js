@@ -46,10 +46,13 @@ function CreateTask({ addTask }) {
 
 function Todo(props) {
     const [tasksRemaining, setTasksRemaining] = useState(0);
+    /*
     let arr = [];
     let j = props.tasks.map((i) => {
         arr.push(i)
     })
+    */
+    let arr = []
     const [tasks, setTasks] = useState(arr);
 
     useEffect(() => { setTasksRemaining(tasks.filter(task => !task.status).length) });
