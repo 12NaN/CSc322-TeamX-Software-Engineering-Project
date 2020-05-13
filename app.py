@@ -1258,7 +1258,6 @@ def populate_table_data():
 
     notification3 = Notification(
         notif_id=3, id=3, group_id=3, sender_id=2, recipient_id=4, body='Hello Henry')
-    
 
     db.session.add(notification1)
     db.session.add(notification2)
@@ -1269,6 +1268,7 @@ def populate_table_data():
 
     print("Done")
 """
+
 if __name__ == '__main__':
 
     # delete_table_data()
