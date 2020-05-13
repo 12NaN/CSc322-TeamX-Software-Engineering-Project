@@ -14,6 +14,7 @@ class VoteCards extends Component {
             no_votes: '',
             vote_type: '',
             subject_user: '',
+            members:[],
             dataFetched: false
         }
 
@@ -29,6 +30,7 @@ class VoteCards extends Component {
             no_votes: this.props.no_votes,
             vote_type: this.props.vote_type,
             subject_user: this.props.subject_user,
+            members: this.props.members,
             dataFetched: true
         })
 
@@ -40,6 +42,7 @@ class VoteCards extends Component {
         let barA = (bar/barFull)*100;
         let barB = (bar2/barFull)*100;
         let name = '';
+        let u_name = '';
         if(this.state.vote_type === 0){
             name = 'Compliment'
         }
@@ -53,13 +56,19 @@ class VoteCards extends Component {
             name = 'GroupClosure'
         }
 
+        for(var i=0;i<this.props.members.length;i++){
+              if(this.state.subject_user === this.props.members[i].id){
+                u_name=this.props.members[i].user_name
+                break;
+              }
+           } 
         
             return (
                 
                 <div>
                     <Card>
                         <Card.Body>
-                        <Card.Title>{name}</Card.Title>
+                        <Card.Title>{name} for {u_name}</Card.Title>
                         <Card.Text>{this.state.votename}</Card.Text>
                         <br></br>
                         <Card.Text>Yes: {this.state.yes_votes}</Card.Text>
