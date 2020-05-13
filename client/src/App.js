@@ -16,6 +16,8 @@ import AddMembersList from './components/Groups/AddMembersList'
 import Complaints from './components/Complaints'
 import PollForm from './components/Groups/CreatePoll'
 import PollVote from './components/Groups/PollVote'
+import CreateIssueVote from './components/Groups/CreateIssue'
+
 
 class App extends Component {
   render() {
@@ -39,6 +41,7 @@ class App extends Component {
             <Route exact path="/complaint" component={Complaints}/>
             <Route exact path="/projects/:id/createpoll" component={PollForm}/>
             <Route exact path="/projects/:id/poll/:id2" component={PollVote}/>
+            <Route exact path="/projects/:id/createissue/handler" component={CreateIssueVote}/>
           </div>
         </div>
       </Router>
