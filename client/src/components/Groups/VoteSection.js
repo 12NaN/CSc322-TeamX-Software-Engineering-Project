@@ -15,6 +15,7 @@ class VoteSection extends Component {
         this.state = {
             group_id: this.props.group,
             votes: [],
+            memberlist: this.props.members,
             data: true
 
         };
@@ -39,7 +40,7 @@ class VoteSection extends Component {
     
     render() {
         const listItems = this.state.votes.map((i) =>
-            <VoteCards votename={i["desc"]} vote_id={i["vote_id"]} group_id={this.state.group_id} yes_votes={i["vote_yes"]} no_votes={i["vote_no"]} vote_type={i["vote_type"]} subject_user={i["user_id_subject"]}/>
+            <VoteCards votename={i["desc"]} vote_id={i["vote_id"]} group_id={this.state.group_id} yes_votes={i["vote_yes"]} no_votes={i["vote_no"]} vote_type={i["vote_type"]} subject_user={i["user_id_subject"]} members={this.state.memberlist}/>
         );
         return (
             <div>
