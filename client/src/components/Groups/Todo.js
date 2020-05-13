@@ -1,66 +1,33 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Todo.css';
 
-class Todo extends Component {
-    constructor(props){
-        super(props);
-        this.state = {
-            id: this.props.group,
-            tasks: []
-        }
-    }
-    componentDidMount(){
-        axios.get(`/projects/${this.state.id}`)
-        .then(res => {
-            this.setState({
-                tasks: res.data["Todo"]
-            })
-            return res;
-        })
-    }
-    render() {
-        return (
-            /*
-            let title = this.state.tasks.map((i) => )
-            */
-           /*
-            <div
+
+function Task({ task, index, completeTask, removeTask }) {
+    console.log(task)
+    console.log(index)
+    return (
+        <div
             className="task"
-            style={{ textDecoration: task.completed ? "line-through" : "" }}
-            >
-                
-            {task.title}
+            style={{ textDecoration: task.status ? "line-through" : "" }}
+        >
+            {task.text}
+            
 
             <button style={{ background: "red" }} onClick={() => removeTask(index)}>x</button>
-            <button onClick={() => completeTask(index)}>Complete</button>                
-            </div>
-            */
-           <div>
+            <button onClick={() => completeTask(index)}>Complete</button>
 
-           </div>
-        );
-    }
+        </div>
+    );
 }
-
-export default Todo;
-
-/*
-
 
 function CreateTask({ addTask }) {
     const [value, setValue] = useState("");
 
     const handleSubmit = e => {
         e.preventDefault();
-        axios.post(`/projects/${props.group}`).then(response =>
-        {
-            //    console.log("TODOOOOOOOOOOO")
-            //    console.log(response.data["Todo"][0]);
-            //    return response.data["Todo"];
-            return response;
-        })
         if (!value) return;
+
         addTask(value);
         setValue("");
     }
@@ -79,49 +46,57 @@ function CreateTask({ addTask }) {
 
 function Todo(props) {
     const [tasksRemaining, setTasksRemaining] = useState(0);
-    const taskValues =  () => {
-        axios.get(`/projects/${props.group}`).then(response =>
-        {
-            console.log("TODOOOOOOOOOOO")
-            console.log(response.data["Todo"][0]);
-            return response.data["Todo"];
-        })
-    }
-    console.log(taskValues);
-    const [tasks, setTasks] = useState(
+    /*
+    let arr = [];
+    let j = props.tasks.map((i) => {
+        arr.push(i)
+    })
+    */
+    let arr = []
+    const [tasks, setTasks] = useState(arr);
 
-        [
+    useEffect(() => { setTasksRemaining(tasks.filter(task => !task.status).length) });
+
+
+    const addTask = text => {
+        const newTasks = [...tasks, { text, status: 0 }];
+        console.log(text);
+        axios.post(`/projects/${props.group}/add-todo`,
         {
-            title: "Grab some Pizza",
-            completed: true
-        },
-        {
-            title: "Do your workout",
-            completed: true
-        },
-        {
-            title: "Hangout with friends",
-            completed: false
+            text: text,
+            user_id: props.user,
+            group_id: props.group,
+            status: 0
         }
-    
-    ]);
-    console.log(tasks)
-    useEffect(() => { setTasksRemaining(tasks.filter(task => !task.completed).length) });
-
-
-    const addTask = title => {
-        const newTasks = [...tasks, { title, completed: false }];
+        ).then((r) =>{
+            console.log(r);
+        })
         setTasks(newTasks);
     };
 
     const completeTask = index => {
         const newTasks = [...tasks];
-        newTasks[index].completed = true;
+        newTasks[index].status = 1;
+        axios.post(`/projects/${props.group}/update-todo/${newTasks[index]["id"]}`, {
+            id: newTasks[index]["id"],
+            text: newTasks[index]["text"],
+            user_id: newTasks[index]["user_id"],
+            status: newTasks[index]["status"],
+            group_id: newTasks[index]["group_id"]
+        }).then((r) =>{
+            console.log(r)
+        })
         setTasks(newTasks);
     };
 
     const removeTask = index => {
         const newTasks = [...tasks];
+
+        axios.post(`/projects/${props.group}/remove-todo/${newTasks[index]["id"]}`, {
+            id: newTasks[index]["id"]
+        }).then(r =>
+            console.log(r)
+        )
         newTasks.splice(index, 1);
         setTasks(newTasks);
     };
@@ -138,6 +113,7 @@ function Todo(props) {
                     removeTask={removeTask}
                     key={index}
                     />
+
                 ))}
             </div>
             <div className="create-task" >
@@ -148,4 +124,3 @@ function Todo(props) {
 }
 
 export default Todo;
-*/

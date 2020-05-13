@@ -24,6 +24,7 @@ class Group extends Component {
             name: '',
             members: [],
             memNames: [],
+            tasks: [],
             desc: '',
             visi_posts: false,
             visi_members: false,
@@ -58,10 +59,11 @@ class Group extends Component {
                 visi_posts: response.data['Group'][0]["visi_posts"],
                 visi_members: response.data['Group'][0]["visi_members"],
                 visi_eval: response.data['Group'][0]["visi_eval"],
-                visi_warn: response.data['Group'][0]["visi_warn"]
+                visi_warn: response.data['Group'][0]["visi_warn"],
+                tasks: response.data['Todo']
             })
             console.log(response.data['Group'][0])
-            
+            console.log(response.data['Todo'])
             let j = 0;
             let k = []
             let n = []
@@ -102,7 +104,7 @@ class Group extends Component {
                 <hr></hr>
                 <Sections sectionName="Members" privacy={localStorage && this.state.memNames.length != 0 && localStorage.usertoken && this.state.memNames.includes(this.state.user_id)  ? false : this.state.visi_members} component={<Members members={this.state.members}/>}/>
                 <hr></hr>
-                <Sections sectionName="Tasks" privacy={localStorage && this.state.memNames.length != 0 && localStorage.usertoken && this.state.memNames.includes(this.state.user_id)  ? false : this.state.visi_posts} component={<Todo group = {this.state.id}/>}/>
+                <Sections sectionName="Tasks" privacy={localStorage && this.state.memNames.length != 0 && localStorage.usertoken && this.state.memNames.includes(this.state.user_id)  ? false : this.state.visi_posts} component={<Todo group = {this.state.id} tasks={this.state.tasks} user= {this.state.user_id}/>}/>
                 <hr></hr>
                 <Sections sectionName="Poll" privacy={localStorage && this.state.memNames.length != 0 && localStorage.usertoken && this.state.memNames.includes(this.state.user_id)  ? false : this.state.visi_posts} component={<PollSection group= {this.state.id}/>}/>
                 <hr></hr>

@@ -102,7 +102,7 @@ class BlackList(db.Model):
 
 class Groups(db.Model):
     group_id = db.Column(db.Integer, primary_key=True)
-    group_name = db.Column(db.String(20), nullable=False)
+    group_name = db.Column(db.String(20), unique=True, nullable=False)
     group_desc = db.Column(db.Text, nullable=False)
     visi_posts = db.Column(db.Boolean, nullable=False)
     visi_members = db.Column(db.Boolean, nullable=False)
@@ -462,6 +462,7 @@ def create():
             rating: 0
 """
     group = GroupSchema(many=True)
+    groupM = GroupMemSchema(many=True)
     name = request.json['group_name']
     desc = request.json['group_desc']
     posts = bool(request.json['visi_post'])
@@ -473,14 +474,28 @@ def create():
                        visi_members=members, visi_eval=evaluate, visi_warn=warn, rating=rating)
     db.session.add(new_group)
     db.session.commit()
-
+    #obj = session.query(ObjectRes).order_by(ObjectRes.id.desc()).first()
+#    new_group_mem = GroupMembers(id=db.session.query(Groups.group_id).filter(group_name == name).first(), user_id = user_id)
+#    db.session.add(new_group_mem)
+#    db.session.commit()
     print("POSSSSSSSSSST")
     result = group.dump(Groups.query.filter_by(group_name=name))
-    print(result)
     return jsonify({'result': result})
 
+# This route invites members to a group.
+@app.route('/projects/create/mem', methods=['POST'])
+def createMem():
+    group = request.json['group_id']
+    user = request.json['user_id']
+    new_mem = GroupMembers(group_id=group, user_id=user)
+    db.session.add(new_mem)
+    db.session.commit()
+    mem = GroupMemSchema(many=True)
+    result = mem.dump(GroupMembers.query.filter_by(group_id=group))
+    return jsonify({"result": result})
 
-# The profiles() function gets all of the user profiles.
+# This route displays users on the users page.
+
 
 @app.route('/users', methods=['GET'])
 def profiles():
@@ -671,30 +686,25 @@ def login():
 # This route redirects the removeToDo function to be used at the group page
 
 
-@app.route("/projects/<group_id>/remove-todo/<item_id>")
+@app.route("/projects/<group_id>/remove-todo/<item_id>", methods=["POST"])
 def removeTodo(group_id, item_id):
     data = {'id': item_id}
-    pusher.trigger("room", 'item-removed', data)
     print(group_id)
-    return jsonify(data)
+    print(item_id)
+    #db.session.query(Todo).filter(group_id == group_id).filter(id==item_id).delete(synchronize_session=False)
+    # db.session.query(User).filter(User.id == user).update(
+    #       {User.rating: User.rating + reduce_points})
+    #removeTodo = Todo.query.filter(group_id == group_id).filter(id==item_id)
+    #removeTodo = db.session.query(Todo).filter(group_id == group_id).filter(id==item_id)
+    # db.session.delete(removeTodo)
+    db.session.commit()
+    todo = TodoSchema(many=True)
+    result = todo.dump(removeTodo)
+    print(Todo.query.filter(group_id == group_id).all())
+    print("Todo removed")
+    return jsonify(result)
 
     # endpoint for updating todo item
-
-
-# This route redirects a user to a group page for a specific group.
-
-@app.route('/projects/<group_id>', methods=['GET'])
-def getTodo(group_id):
-    todo = Todo.query.filter_by(group_id=group_id)
-    to = TodoSchema(many=True)
-    output = to.dump(todo)
-
-    result = {
-        'Todo': output
-    }
-    return result
-
-# This route posts data into a database regarding the action of a user in the group.
 
 
 @app.route('/projects/<group_id>', methods=['POST'])
@@ -746,28 +756,46 @@ def posts(group_id):
     return jsonify({'result': result, "clean": violation, "reduced": reduce_points})
 
 
+@app.route('/projects/<group_id>/add-todo', methods=['POST'])
+def addTodo(group_id):
+    todo = TodoSchema(many=True)
 
-@app.route('/projects/<group_id>', methods=['POST'])
-def addTodo():
-    data = json.loads(request.data)  # load JSON data from request
-    # trigger `item-added` event on `todo` channel
-    pusher.trigger('room', 'item-added', data)
-    return jsonify(data)
+    text = request.json['text']
+    user_id = request.json['user_id']
+    status = request.json['status']
+    group_id = group_id
 
+    new_todo = Todo(text=text,
+                    user_id=user_id, status=status, group_id=group_id)
+    db.session.add(new_todo)
+    db.session.commit()
 
+    print("New Todo added")
+    result = todo.dump(new_todo)
+    return jsonify({'result': result})
 # This route redirects the updateToDo function to be used at the group page
 
 
-@app.route('/projects/<group_id>', methods=['POST'])
-def updateTodo(group_id):
-    data = {
-        'id': item_id,
-        'completed': json.loads(request.data).get('completed', 0)
-    }
-    # 'private-'+str(group_id)
-    pusher.trigger("room", 'item-updated', data)
-    print("pushed")
-    return jsonify(data)
+@app.route('/projects/<group_id>/update-todo/<item_id>', methods=['POST'])
+def updateTodo(group_id, item_id):
+    #users = User.query.order_by(User.rating)
+    #user = UserSchema(many=True)
+    #output = user.dump(users)
+    # result = {
+    #    'Users': output
+    # }
+    #       db.session.query(User).filter(User.id == user).update(
+    #       {User.rating: User.rating + reduce_points})
+    todo = TodoSchema(many=True)
+    id = request.json['id']
+    print("FUCCCCCK")
+    new_todo = db.session.query(Todo).filter(Todo.group_id == group_id).filter(id == item_id).update({
+        'status': request.json['status']
+    }, synchronize_session='fetch')
+    print("Todo Updated")
+    db.session.commit()
+    #result = todo.dump(new_todo)
+    return jsonify({'result': "hi"})
 
 
 # This route puts data in the database regarding a newly created poll where
@@ -1223,13 +1251,14 @@ def populate_table_data():
     db.session.add(todo4)
 
     notification1 = Notification(
-        notif_id=1, id=1, sender_id=2, recipient_id=3, body='Hello Frank')
+        notif_id=1, id=1, group_id=3, sender_id=2, recipient_id=3, body='Hello Frank')
 
     notification2 = Notification(
-        notif_id=2, id=2, sender_id=3, recipient_id=5, body='Hello Peter')
+        notif_id=2, id=2, group_id=3, sender_id=3, recipient_id=5, body='Hello Peter')
 
     notification3 = Notification(
-        notif_id=3, id=3, sender_id=2, recipient_id=4, body='Hello Henry')
+        notif_id=3, id=3, group_id=3, sender_id=2, recipient_id=4, body='Hello Henry')
+    
 
     db.session.add(notification1)
     db.session.add(notification2)
@@ -1240,7 +1269,6 @@ def populate_table_data():
 
     print("Done")
 """
-
 if __name__ == '__main__':
 
     # delete_table_data()

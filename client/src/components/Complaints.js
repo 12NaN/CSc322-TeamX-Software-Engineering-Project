@@ -10,7 +10,7 @@ class Complaints extends Component {
             <Form>
             <Form.Group controlId="exampleForm.ControlInput1">
                 <Form.Label>Complaint Towards</Form.Label>
-                <Form.Control type="text" placeholder="Username/Group name" />
+                <Form.Control type="text" placeholder="Username/Group name/Appeal" />
             </Form.Group>
             <Form.Group controlId="exampleForm.ControlTextarea1">
                 <Form.Label>Text</Form.Label>

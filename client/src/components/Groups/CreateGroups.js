@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import {Link} from 'react-router-dom';
 import {Form, Row, Col} from 'react-bootstrap';
+import { Redirect} from 'react-router-dom';
+import jwt_decode from 'jwt-decode';
 import AddMembersList from './AddMembersList';
 import axios from 'axios';
 class CreateGroups extends Component {
@@ -12,7 +14,9 @@ class CreateGroups extends Component {
             post: false,
             members: false,
             eval: false,
-            warn: false
+            warn: false,
+            currentGroups: [],
+            created: false
         }
         this.handleNameChange = this.handleNameChange.bind(this);
         this.handleDescChange = this.handleDescChange.bind(this);
@@ -42,21 +46,12 @@ class CreateGroups extends Component {
         console.log(e.target.value)
         this.setState({warn: this.state.warn == true ? false: true});
     }
+
     handleOnClick(e){
         e.preventDefault();
-        let groups = [];
-        axios.get('/projects')
-        .then(response =>
-        {
-            for(let i = 0; i < response.data.length; i++){
-                console.log(response.data[i]['group_name'])
-                groups.push(response.data[i]['group_name']);
-            }
-            console.log(response);
-            return response;
-        });
-        console.log(groups)
-        if(!groups.includes(this.state.name)){
+        if(!this.state.currentGroups.includes(this.state.name)){
+            const token = localStorage.usertoken
+            const decoded = jwt_decode(token)
             axios.post('/projects/create', {
                 group_name: this.state.name,
                 group_desc: this.state.desc,
@@ -64,17 +59,48 @@ class CreateGroups extends Component {
                 visi_members: this.state.members == true ? 1 : 0,
                 visi_eval: this.state.eval == true ? 1 : 0,
                 visi_warn: this.state.warn == true ? 1 : 0,
-                rating: 0
+                rating: 0,
+                user_id: decoded.identity.id,
             })
             .then((r) =>{
-                console.log(r)
+                console.log(r);
+                this.setState({
+                    group_id: r.data.result[0]["group_id"]
+                })
+                axios.post('/projects/create/mem',{
+                    group_id: this.state.group_id,
+                    user_id: decoded.identity.id
+                }).then((r)=> {
+                    console.log(r)
+                    this.setState({
+                        created: true
+                    })
+                })    
             })
+            
         }
         else{
             alert("That group name already exists!")
         }
     }
-    
+    componentDidMount(){
+        let groups = [];
+        axios.get('/projects')
+        .then(response =>
+        {
+            for(let i = 0; i < response.data.Groups.length; i++){
+                console.log(response.data.Groups[i]['group_name'])
+                groups.push(response.data.Groups[i]['group_name']);
+            }
+            console.log(response);
+            return response;
+        });
+        console.log(groups)
+        this.setState({
+            currentGroups: groups
+        })
+ 
+    }
     render() {
         return (
             <div>
@@ -124,7 +150,10 @@ class CreateGroups extends Component {
                     />
                 </Col>
                 </Form.Group>
-                <Link style={{"backgroundColor":"purple"}} to={'/projects/create/addMembers'} className="btn btn-primary" onClick={this.handleOnClick}>Submit</Link>
+                <Link style={{"backgroundColor":"purple"}}  className="btn btn-primary" onClick={this.handleOnClick}>Submit</Link>
+                {this.state.created ? <Link style={{"backgroundColor":"purple"}} to={'/projects/create/addMembers'} className="btn btn-primary">Add Group Members</Link>: ""}
+                <Link style={{"backgroundColor":"purple"}} to={'/projects'} className="btn btn-primary">Return to projects</Link>
+
                 </Form>
             </div>
         );
