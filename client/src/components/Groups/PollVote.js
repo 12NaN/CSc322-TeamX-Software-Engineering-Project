@@ -79,7 +79,9 @@ class PollVote extends Component {
                 newdata: [...prevState.newdata, { option:'',votes:'' }]
              }));
            }            
-           this.state.newdata.pop()
+           this.setState({
+              newdata: this.state.newdata.slice(0, -1)
+            });
            console.log(this.state.newdata)
        })
   }
