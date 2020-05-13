@@ -33,6 +33,7 @@
     "react-bootstrap": "^1.0.0",
     "react-dom": "^16.13.1",
     "react-notifications": "^1.6.0",
+    "react-polls": "^1.2.0",
     "react-router-dom": "^5.1.2",
     "wait-on": "^4.0.1"
   }

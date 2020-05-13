@@ -3,14 +3,17 @@ import ReactDOM from "react-dom";
 import axios from 'axios'
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
-
+import jwt_decode from 'jwt-decode';
 class PollForm extends Component {
   constructor(props) {
         super(props);
+        const token = localStorage.usertoken
+        const decoded = jwt_decode(token)
         this.state = {
           group_id: '',   
           polls: [{ date: "", startTime: "", endTime: "" }],
-          description: ""
+          description: "",
+          user_id: decoded.identity.id
     };
   }
 
@@ -39,7 +42,7 @@ class PollForm extends Component {
 
   handleSubmit = e => {
     e.preventDefault();
-     if(this.state.description==='')
+     if(this.state.description===''|| this.state.polls.length === 0)
         {
             NotificationManager.warning("Please complete all fields.", 'ATTENTION');
             return false;
@@ -55,7 +58,8 @@ class PollForm extends Component {
     axios.post(`/projects/${this.state.group_id}/createpoll`, {
       group_id: this.state.group_id,
       polls: this.state.polls,
-      description: this.state.description
+      description: this.state.description,
+      user_id: this.state.user_id
     })
     .then((r) =>{
       console.log(r)

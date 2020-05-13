@@ -13,7 +13,8 @@ from flask_marshmallow import Marshmallow
 from marshmallow_sqlalchemy import ModelSchema
 from pymysql import NULL
 from flask_mail import Mail, Message
-
+import os.path
+from os import path
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'mysecret'
@@ -142,16 +143,42 @@ class PollOptions(db.Model):
     option = db.Column(db.String(100), nullable=False)
     poll_id = db.Column(db.Integer, db.ForeignKey(
         'poll.poll_id'), nullable=False)
-    count = db.Column(db.Integer, nullable=True)
+    votes = db.Column(db.Integer, nullable=True)
     def __repr__(self):
-        return f"PollOptions('{self.option}', '{self.poll_id}', '{self.count}')"    
+        return f"PollOptions('{self.option}', '{self.poll_id}', '{self.votes}')"
 
 # This class creates the Post table in SQLITE
+class VoteHandle(db.Model):
+    vote_id = db.Column(db.Integer, primary_key=True)
+    desc = db.Column(db.String(300), nullable=False) 
+    user_id_issuer = db.Column(db.Integer, db.ForeignKey(
+        'user.id'), nullable=False) 
+    user_id_subject = db.Column(db.Integer, db.ForeignKey(
+        'user.id'), nullable=True)
+    group_id_subject = db.Column(db.Integer, db.ForeignKey(
+        'groups.group_id'), nullable=True)
+    vote_type = db.Column(db.Integer, nullable=False) 
+    # 0=>Compliment, 1=>Warn, 2=>Kick, 3=>GroupClosure, 4=>VoteforSU  
+    vote_yes = db.Column(db.Integer, nullable=True)
+    vote_no = db.Column(db.Integer, nullable=True)
+    status = db.Column(db.Integer, nullable=False) 
+    # 0=>inactive, 1=>active, 2=completed
+    def __repr__(self):
+        return f"VoteHandle('{self.vote_id}', '{self.desc}', '{self.user_id_issuer}', '{self.user_id_subject}', '{self.group_id_subject}', '{self.vote_type}', '{self.vote_yes}', '{self.vote_no}', '{self.status}')"
 
+class Voters(db.Model):
+    vote_id = db.Column(db.Integer, db.ForeignKey(
+        'vote_handle.vote_id'), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey(
+        'user.id'), primary_key=True)
+    status = db.Column(db.Integer, nullable=False)
+    # 0=>NoVote, 1=>Voted
+    def __repr__(self):
+        return f"Voters('{self.vote_id}', '{self.user_id}', '{self.status}')"
 
 class Notification(db.Model):
     notif_id = db.Column(db.Integer, primary_key=True)
-    id = db.Column(db.Integer)
+    id = db.Column(db.Integer, primary_key=True)
     group_id = db.Column(db.Integer, db.ForeignKey(
         'groups.group_id', ondelete="CASCADE"))
     sender_id = db.Column(db.Integer, db.ForeignKey(
@@ -258,11 +285,21 @@ class BlackListSchema(ma.SQLAlchemySchema):
 
 class PollSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
-        fields = ('desc', 'group_id')
+        fields = ('poll_id','desc', 'group_id')
 
 class PollOptionsSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
-        fields = ('option', 'poll_id', 'count')
+        fields = ('id','option', 'poll_id', 'votes')
+        
+class VoteHandleSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        fields = ('vote_id', 'desc', 'user_id_issuer',
+                  'user_id_subject', 'group_id_subject', 'vote_type', 'vote_yes', 'vote_no', 'status')
+
+class VotersSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        fields = ('vote_id', 'user_id', 'status') 
+        
 class TodoSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         fields = ('id', 'text', 'user_id', 'status', 'group_id')
@@ -459,8 +496,7 @@ def profile(user_id):
     white = WhiteBox.query.filter_by(user_id=user_id)
     group = Groups.query
     groupMem = GroupMembers.query.filter_by(user_id=user_id)
-    print(groupMem)
-    print("helllllllllllllllo")
+    print("Searching for Profile")
     blk = BlackBoxSchema(many=True)
     wht = WhiteBoxSchema(many=True)
     us = UserSchema(many=True)
@@ -491,24 +527,33 @@ def groupsPage(id):
     groupMem = GroupMembers.query.filter_by(group_id=id)
     users = User.query.all()
     posts = Post.query.filter_by(group_id=id)
-    todo = Todo.query.filter_by(group_id=id)
+    polls = Poll.query.filter_by(group_id=id)
+    pollopts = PollOptions.query.join(Poll, PollOptions.poll_id==Poll.poll_id).filter_by(group_id = id)
+    vote = VoteHandle.query.filter_by(group_id_subject=id)
     u = UserSchema(many=True)
     g = GroupSchema(many=True)
     gM = GroupMemSchema(many=True)
     p = PostSchema(many=True)
-    t = TodoSchema(many=True)
+    pl = PollSchema(many=True)
+    plo = PollOptionsSchema(many=True)
+    vt = VoteHandleSchema(many=True)
     output = g.dump(group)
     output2 = gM.dump(groupMem)
     output3 = u.dump(users)
     output4 = p.dump(posts)
-    output5 = t.dump(todo)
+    output5 = pl.dump(polls)
+    output6 = plo.dump(pollopts)
+    output7 = vt.dump(vote)
     result = {
         'Group': output,
         'GroupMembers': output2,
         'Users': output3,
         'Posts': output4,
-        'Todo': output5
+        'Polls': output5,
+        "PollOptions": output6,
+        'Vote': output7
     }
+    print(result['PollOptions'])
     return jsonify(result)
 
 
@@ -534,15 +579,14 @@ def profilesAndGroups():
 def login():
     email = request.get_json()['email']
     password = request.get_json()['password']
+    
     result = ""
 
     user = User.query.filter_by(email=str(email)).first()
     banned_emails = getBlackListEmails(email)
-
     if (email in banned_emails):
         print(email," IS BANNED! --py")
         return jsonify({"error": "This email is banned!"})
-
     if user and bcrypt.check_password_hash(user.password, password):
         access_token = create_access_token(identity={'id': user.id, 'user_name': user.user_name,
                                                     'first_name': user.first_name, 'last_name': user.last_name, 'email': user.email, 'rating': user.rating, 'id': user.id})
@@ -582,34 +626,34 @@ def posts(group_id):
     taboo = open('taboo.txt', 'r')
     title = request.json['title']
     content = request.json['content']
-    date_posted = datetime.strptime(
-        request.json['date_posted'], "%a, %d %b %Y %H:%M:%S %Z")
-    print(date_posted)
-    reduce_points = 0  # Amount of points to reduce if taboo word is found
-    penalty = 5  # Number of points to reduce if a taboo word is found within the title or content
-    for line in taboo:
-        stripped_line = line.strip()
-        # print(stripped_line)
-        if stripped_line in title:
-            reduce_points -= penalty  # Reduce points if taboo is in title
-            print(stripped_line)
-            title = title.replace(stripped_line, '*'*len(stripped_line))
-        if stripped_line in content:
-            reduce_points -= penalty  # Reduce Reduce points if taboo is in content
-            print(stripped_line)
-            content = content.replace(stripped_line, '*'*len(stripped_line))
-    taboo.close()
     user = request.json['user_id']
     name = request.json['user_name']
     group = request.json['group_id']
 
-    if reduce_points != 0:  # If the reduction_points is < 0, then reduce the necessary points to the user who used the taboo words
-        modify_user = User.query.get_or_404(
-            user)  # Might need exception handling
-        print("BEFORE", modify_user)  # Debugging
-        db.session.query(User).filter(User.id == user).update(
-            {User.rating: User.rating + reduce_points})  # Querying for the user data and updating
-        print("AFTER", modify_user)  # Debugging
+    date_posted = datetime.strptime(
+        request.json['date_posted'], "%a, %d %b %Y %H:%M:%S %Z")
+    print(date_posted)
+    reduce_points = 0  # Amount of points to reduce if taboo word is found
+    taboo_found = []
+    for line in taboo:
+        stripped_line = line.strip()
+        # print(stripped_line)
+        if stripped_line in title:
+            taboo_found.append(stripped_line)
+            title = title.replace(stripped_line, '*'*len(stripped_line))
+        if stripped_line in content:
+            taboo_found.append(stripped_line)
+            content = content.replace(stripped_line, '*'*len(stripped_line))
+    reduce_points = pointDeduction(name, taboo_found)
+    taboo.close()
+
+    violation = False
+    if reduce_points < 0:  # If the reduction_points is < 0, then reduce the necessary points to the user who used the taboo words
+        print("POST VIOLATION:")
+        print(taboo_found)
+        print(reduce_points)
+        updateRep(user, reduce_points)
+        violation = True
 
 #    date = request.json['date_posted']
     # Adding the new post along with the time stamp
@@ -621,7 +665,7 @@ def posts(group_id):
     print("Post_Added")
     result = post.dump(Post.query.filter_by(group_id=group_id))
     print(result)
-    return jsonify({'result': result})
+    return jsonify({'result': result, "clean":violation, "reduced": reduce_points})
 
 
 @app.route('/projects/<group_id>/add-todo', methods=['POST'])
@@ -670,7 +714,27 @@ def createPoll(group_id):
     poll = PollSchema()
     polloptions = PollOptionsSchema()
     group_id = request.json['group_id']
+    taboo = open('taboo.txt', 'r')
     desc = request.json['description'] 
+    user_id = request.json['user_id']
+
+    reduce_points = 0  # Total amount of points to reduce if a taboo word is found
+    penalty = 1  # Number of points to reduce for each word found in the description
+    words_found = []
+    for line in taboo:
+        stripped_line = line.strip()
+        # print(stripped_line)
+        if stripped_line in desc:
+            reduce_points -= penalty  # Reduce points if taboo is in the poll description
+            desc = desc.replace(stripped_line, '*'*len(stripped_line))
+            words_found.append(stripped_line)
+    taboo.close()
+    # Penalizing the User for using a taboo word when creating a poll
+    if(reduce_points < 0):
+        print("POLL VIOLATION:")
+        print(words_found)
+        updateRep(user_id, reduce_points)
+    
     creation_poll = Poll(desc=desc, group_id=group_id)
     db.session.add(creation_poll)
     db.session.commit()
@@ -682,16 +746,87 @@ def createPoll(group_id):
         print(date)
         print(start)
         print(end)
-        new_poll = PollOptions(option= 'On '+date+': Start -'+start+' End - '+end, poll_id = cur_poll, count = 0 )
+        new_poll = PollOptions(option= 'On '+date+': Start -'+start+' End - '+end, poll_id = cur_poll, votes = 0 )
         db.session.add(new_poll)
         db.session.commit()
-    new_poll = PollOptions(option= 'None of these choices.', poll_id = cur_poll, count = 0 )
+    new_poll = PollOptions(option= 'None of these choices.', poll_id = cur_poll, votes = 0 )
     db.session.add(new_poll)
     db.session.commit()
     results = poll.dump(Poll.query.filter_by(group_id=group_id))
     return jsonify({'result': results})
 
+@app.route('/projects/<group_id>/poll/<poll_id>', methods=['GET'])
+def getpoll(group_id, poll_id):
+    placeholder = poll_id
+    polls = Poll.query.filter_by(poll_id=placeholder)
+    pollopts = PollOptions.query.join(Poll, PollOptions.poll_id==Poll.poll_id).filter_by(poll_id = placeholder)
+    pl = PollSchema(many=True)
+    plo = PollOptionsSchema(many=True)
+    output1 = pl.dump(polls)
+    output2 = plo.dump(pollopts)
+    result = {
+        'Polls': output1,
+        "PollOptions": output2
+    }
+    print(result['PollOptions'])
+    print(result['Polls'])
+    return jsonify(result)
 
+@app.route('/projects/<group_id>/poll/<poll_id>', methods=['POST'])
+def pollvote(group_id, poll_id):
+    placeholder = poll_id
+    polloptions = PollOptionsSchema()
+    data = request.json['NewPollData'] 
+    pollopts = PollOptions.query.filter_by(poll_id = placeholder)
+    pl = PollOptionsSchema(many=True)
+    inputinto = pl.dump(pollopts)
+    print(inputinto[0]['id'])
+    print(data)
+    for i in range(len(data)):
+        update = PollOptions.query.filter_by(id = inputinto[i]['id']).first()
+        update.votes = data[i]['votes']
+        db.session.commit()
+    results = polloptions.dump(Poll.query.filter_by(group_id=group_id))
+    return jsonify({'result': results})
+
+@app.route('/projects/<group_id>/createissue/handler', methods=['GET'])
+def createissues(group_id):
+    placeholder = group_id
+    users = UserSchema()
+    members = User.query.join(GroupMembers, User.id==GroupMembers.user_id)
+    u = UserSchema(many=True)
+    output1 = u.dump(members)
+    print(output1)
+    results = {
+        "Users": output1
+    }
+    return jsonify(results)
+
+@app.route('/projects/<group_id>/createissue/handler', methods=['POST'])
+def issuedvote(group_id):
+    vote = VoteHandleSchema()
+    voters = VotersSchema()
+    group = request.json['group_id']
+    desc = request.json['description']
+    issuer = request.json['issuer_id'] 
+    members = request.json['user_list']
+    subject = request.json['subject_name']
+    vote_type = request.json['vote_type']
+    creation_vote = VoteHandle(desc = desc, user_id_issuer = issuer,
+                  user_id_subject=subject, group_id_subject=group, vote_type=vote_type, vote_yes=1, vote_no=0, status=1)
+    db.session.add(creation_vote)
+    db.session.commit()
+    cur_vote = db.session.query(db.func.max(VoteHandle.vote_id)).scalar()
+    for i in request.json['user_list']:
+        users_id = i['id']
+        print(users_id)
+        if(users_id != issuer):
+            new_voter = Voters(vote_id=cur_vote, user_id=users_id, status=0)
+            db.session.add(new_voter)
+            db.session.commit()
+
+    results = vote.dump(VoteHandle.query.filter_by(group_id_subject=group))
+    return jsonify({'result': results})
 
 # This route redirects the account function to be used at the profile page
 
@@ -702,7 +837,49 @@ def account():
         'static', filename='client/src/components/ProfileImages/user.jpg')
 
 ## SUPPLEMENTARY FUNCTIONS FOR ACCOUNT RETRIEVAL-------------------------
-# Making get WhiteBox and BlackBox Sooon...
+def pointDeduction(user_name, guilty_words):
+    if len(guilty_words) == 0 or "".join(guilty_words).isspace():
+        return 0
+    target_path = os.getcwd() + "/UserTaboos/" + user_name + "Taboo.txt"
+    if path.exists(target_path):
+        print("TABOO FILE FOUND")
+        with open(target_path,"r+") as current_file:
+            taboo_lines = set(current_file.read().splitlines())
+            content_lines = set([i.lower() for i in guilty_words])
+            check_repeats = list(content_lines.intersection(taboo_lines))
+
+            penalty = 0
+            if len(check_repeats) == 0:
+                for new_taboo in content_lines:
+                    if new_taboo not in taboo_lines:
+                        current_file.write(new_taboo.lower()+ "\n")
+                        penalty-=1
+                return penalty
+            else:
+                for new_taboo in content_lines:
+                    if new_taboo not in taboo_lines:
+                        current_file.write(new_taboo.lower() + "\n")
+                        penalty -=1
+                return (len(check_repeats)*-5) + penalty
+        print("TABOO PROCESSED")
+    else:
+        print("FIRST TIME OFFENDER")
+        content_lines = set(guilty_words)
+        with open(target_path,"w") as current_file:
+            for new_taboo in content_lines:
+                current_file.write(new_taboo.lower() + "\n")
+        return -1 * len(content_lines)
+
+# Updates the reputation points of a particular user given their id
+def updateRep(user_id, rep_points):
+    modify_user = User.query.get_or_404(user_id)  # Might need exception handling
+    print("USER:\t",user_id)
+    print("PENALTY:\t", rep_points)
+    print("BEFORE", modify_user)  # Debugging
+    db.session.query(User).filter(User.id == user_id).update(
+        {User.rating: User.rating + rep_points})  # Querying for the user data and updating
+    print("AFTER", modify_user)  # Debugging
+    db.session.commit()
 
 # Returns the list of black_listed_user names given the target user_name
 def getBlackListUsers(user_name):
