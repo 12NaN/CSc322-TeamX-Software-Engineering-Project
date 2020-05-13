@@ -3,6 +3,10 @@ import { getNotifications } from './UserFunctions'
 import NotificationCards from './NotificationCards';
 import jwt_decode from 'jwt-decode'
 import userimg from './ProfileImages/user.png'
+import axios from 'axios';
+import Cards from './Cards';
+import ApproveCard from './ApproveCard';
+
 
 class Notifications extends Component {
 
@@ -15,6 +19,8 @@ class Notifications extends Component {
       image: '',
       user_id: 0,
       notifications: [],
+      users: [],
+      userNotif: [],
       data: false,
       errors: {}
 
@@ -22,7 +28,25 @@ class Notifications extends Component {
   }
 
   componentDidMount() {
+    axios.get('/notifications').then(res => {
 
+      let notifs = [];
+      console.log(res.data['Users'])
+      console.log(res.data['Notifications'])
+      for (let i = 0; i < res.data['Users'].length; i++) {
+        for (let j = 0; j < res.data['Notifications'].length; j++)
+          if (res.data['Users'][i]['id'] == res.data['Notifications'][j]['sender_id'] && res.data['Notifications'][j]['recipient_id'] == 1) {
+            notifs.push(res.data['Users'][i]);
+          }
+      }
+      this.setState({
+        userNotif: notifs,
+        data: true
+      })
+      console.log(notifs)
+
+      return res;
+    })
     getNotifications().then(res => {
       const token = localStorage.usertoken
       const decoded = jwt_decode(token)
@@ -33,9 +57,29 @@ class Notifications extends Component {
         email: decoded.identity.email,
         user_id: decoded.identity.id,
         notifications: res["Notifications"],
+        users: res["Users"],
         data: true
       })
     })
+  }
+
+  onApprove() {
+    axios.post('/notifications', {
+      notif_id: this.state.notif_id,
+      id: this.state.id,
+      sender_id: this.state.sender_id,
+      recipient_id: this.state.recipient_id,
+      body: "Approved",
+      email: ""
+
+    })
+      .then((r) => {
+        console.log(r)
+      })
+    this.setState(state => ({
+      isDisabled: true,
+      disabled: true,
+    }));
   }
 
   render() {
@@ -45,45 +89,59 @@ class Notifications extends Component {
     const userName = this.state.first_name;
     console.log(user);
 
+
     const listItems = this.state.notifications.map((i) =>
 
-      < NotificationCards id={i["id"]} sender_id={i["sender_id"]} recipient_id={i["recipient_id"]} body={i["body"]} />
+      < NotificationCards notif_id={i["notif_id"]} id={i["id"]} sender_id={i["sender_id"]} recipient_id={i["recipient_id"]} body={i["body"]} />
     );
+
+    const listUsers = this.state.users.map((i) =>
+      <Cards name={i["user_name"]} rating={i["rating"]} id={i["id"]} type={"user"} />
+    );
+
+    const listNotifs = this.state.userNotif.map((i) =>
+      <ApproveCard name={i["user_name"]} rating={i["rating"]} id={i["id"]} email={i["email"]} />
+
+    );
+
 
     return (
 
       listItems.filter(listItems => listItems.props.recipient_id == user).map(listItems => (
-        <ul>
+        <div>
           <h1 className="text-center">{userName}</h1>
 
           {listItems}
-        </ul>
-      ))
+
+          {listNotifs}
+
+        </div>
+      )));
 
 
 
-      /*<div>
+    /*<div>
         <h1 className="text-center">{user}</h1>
         <ul>{listItems}</ul>
       </div>*/
-    );
+
   }
   /*
   constructor() {
-    super();
+          super();
     this.state = {
-      notifications: [],
+          notifications: [],
       data: false
     }
   }
   componentDidMount() {
-    getNotifications().then(res => {
-      this.setState({
-        notifications: res["Notifications"],
-        data: true
-      })
-    })
-  }
+          getNotifications().then(res => {
+            this.setState({
+              notifications: res["Notifications"],
+              data: true
+            })
+          })
+        }
   render() {
     if (!this.state.data) return null;
 
@@ -92,9 +150,9 @@ class Notifications extends Component {
     );
     return (
       <div>
-        <h1 className="text-center">Notifications</h1>
-        <ul>{listItems}</ul>
-      </div>
+          <h1 className="text-center">Notifications</h1>
+          <ul>{listItems}</ul>
+        </div>
     );
   }*/
 }

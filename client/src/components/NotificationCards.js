@@ -7,6 +7,7 @@ class NotificationCards extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            notif_id: 0,
             id: 0,
             sender_id: 0,
             recipient_id: 0,
@@ -23,6 +24,7 @@ class NotificationCards extends Component {
         const token = localStorage.usertoken
         const decoded = jwt_decode(token)
         this.setState({
+            notif_id: this.props.notif_id,
             id: this.props.id,
             sender_id: this.props.sender_id,
             recipient_id: this.props.recipient_id,
@@ -34,6 +36,7 @@ class NotificationCards extends Component {
 
     onApprove() {
         axios.post('/notifications', {
+            notif_id: this.state.notif_id,
             id: this.state.id,
             sender_id: this.state.sender_id,
             recipient_id: this.state.recipient_id,
@@ -90,6 +93,7 @@ class NotificationCards extends Component {
                             <Card.Title >{type_name}</Card.Title>
                             <Card.Text >
                                 {this.state.body}
+                                {this.state.notif_id}
                                 <div>
                                     {button}
                                     {button2}
