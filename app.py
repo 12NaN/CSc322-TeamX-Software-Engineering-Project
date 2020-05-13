@@ -808,6 +808,59 @@ def issuedvote(group_id):
     results = vote.dump(VoteHandle.query.filter_by(group_id_subject=group))
     return jsonify({'result': results})
 
+@app.route("/projects/<group_id>/votefor/issue/<vote_id>", methods=['GET'])
+def voteresponder(group_id, vote_id):
+    placeholder = vote_id
+    p2=group_id
+    votes = VoteHandle.query.filter_by(vote_id=placeholder)
+    voters = Voters.query.filter_by(vote_id=placeholder)
+    users = User.query.join(Voters, User.id==Voters.user_id).filter_by(vote_id=placeholder)  
+    users2 = User.query.join(GroupMembers, User.id==GroupMembers.user_id).filter_by(group_id=p2)
+    pl = VoteHandleSchema(many=True)
+    plo = VotersSchema(many=True)
+    u = UserSchema(many=True)
+    u2= UserSchema(many=True)
+    output1 = pl.dump(votes)
+    output2 = plo.dump(voters)
+    output3 = u.dump(users)
+    output4 = u2.dump(users2)
+    print(output4)
+    result = {
+        'VoteInfo': output1,
+        "Voters": output2,
+        'Users': output3,
+        "Members":output4
+    }
+    print(result['VoteInfo'])
+    print(result['Voters'])
+    return jsonify(result)
+
+@app.route("/projects/<group_id>/votefor/issue/<vote_id>", methods=['POST'])
+def pushvote(group_id, vote_id):
+    placeholder = vote_id
+    p2=group_id
+    vote = VoteHandleSchema()
+    voters = VotersSchema()
+    data = request.json['NewVoteData'] 
+    voter = request.json['user_id_access']
+    casted_vote = VoteHandle.query.filter_by(vote_id = placeholder)
+    v1 = VoteHandleSchema(many=True)
+    inputinto = v1.dump(casted_vote)
+    print(inputinto[0]['vote_id'])
+    print(data)
+    update = VoteHandle.query.filter_by(vote_id = inputinto[0]['vote_id']).first()
+    update.vote_yes = data[0]['votes']
+    db.session.commit()
+    update2 = VoteHandle.query.filter_by(vote_id = inputinto[0]['vote_id']).first()
+    update2.vote_no = data[1]['votes']
+    update3 = Voters.query.filter_by(vote_id=placeholder, user_id=voter).first()
+    update3.status = int(1)
+    db.session.commit()
+    results = voters.dump(Voters.query.filter_by(vote_id=placeholder))
+    return jsonify({'result': results})
+    
+
+
 # This route redirects the account function to be used at the profile page
 
 
