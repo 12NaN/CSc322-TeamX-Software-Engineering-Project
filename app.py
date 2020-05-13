@@ -108,7 +108,7 @@ class BlackList(db.Model):
 
 class Groups(db.Model):
     group_id = db.Column(db.Integer, primary_key=True)
-    group_name = db.Column(db.String(20), nullable=False)
+    group_name = db.Column(db.String(20), unique = True, nullable=False)
     group_desc = db.Column(db.Text, nullable=False)
     visi_posts = db.Column(db.Boolean, nullable=False)
     visi_members = db.Column(db.Boolean, nullable=False)
@@ -554,26 +554,25 @@ def login():
 # This route redirects the removeToDo function to be used at the group page
 
 
-@app.route("/projects/<group_id>/remove-todo/<item_id>")
+@app.route("/projects/<group_id>/remove-todo/<item_id>", methods=["POST"])
 def removeTodo(group_id, item_id):
     data = {'id': item_id}
-    pusher.trigger("room", 'item-removed', data)
     print(group_id)
-    return jsonify(data)
+    print(item_id)
+    #db.session.query(Todo).filter(group_id == group_id).filter(id==item_id).delete(synchronize_session=False)
+    #db.session.query(User).filter(User.id == user).update(
+     #       {User.rating: User.rating + reduce_points}) 
+    #removeTodo = Todo.query.filter(group_id == group_id).filter(id==item_id)
+    #removeTodo = db.session.query(Todo).filter(group_id == group_id).filter(id==item_id)
+    #db.session.delete(removeTodo)
+    db.session.commit()
+    todo = TodoSchema(many=True)
+    result = todo.dump(removeTodo)
+    print(Todo.query.filter(group_id == group_id).all())
+    print("Todo removed")
+    return jsonify(result)
 
     # endpoint for updating todo item
-
-
-@app.route('/projects/<group_id>', methods=['GET'])
-def getTodo(group_id):
-    todo = Todo.query.filter_by(group_id=group_id)
-    to = TodoSchema(many=True)
-    output = to.dump(todo)
-
-    result = {
-        'Todo': output
-    }
-    return result
 
 
 @app.route('/projects/<group_id>', methods=['POST'])
@@ -625,25 +624,46 @@ def posts(group_id):
     return jsonify({'result': result})
 
 
-@app.route('/projects/<group_id>', methods=['POST'])
-def addTodo():
-    data = json.loads(request.data)  # load JSON data from request
-    # trigger `item-added` event on `todo` channel
-    pusher.trigger('room', 'item-added', data)
-    return jsonify(data)
+@app.route('/projects/<group_id>/add-todo', methods=['POST'])
+def addTodo(group_id):
+    todo = TodoSchema(many=True)
+
+    text = request.json['text']
+    user_id = request.json['user_id']
+    status = request.json['status']
+    group_id = group_id
+
+    new_todo = Todo(text=text,
+                    user_id=user_id, status=status, group_id=group_id)
+    db.session.add(new_todo)
+    db.session.commit()
+
+    print("New Todo added")
+    result = todo.dump(new_todo)
+    return jsonify({'result': result})
 # This route redirects the updateToDo function to be used at the group page
 
 
-@app.route('/projects/<group_id>', methods=['POST'])
-def updateTodo(group_id):
-    data = {
-        'id': item_id,
-        'completed': json.loads(request.data).get('completed', 0)
-    }
-    # 'private-'+str(group_id)
-    pusher.trigger("room", 'item-updated', data)
-    print("pushed")
-    return jsonify(data)
+@app.route('/projects/<group_id>/update-todo/<item_id>', methods=['POST'])
+def updateTodo(group_id, item_id):
+    #users = User.query.order_by(User.rating)
+    #user = UserSchema(many=True)
+    #output = user.dump(users)
+    #result = {
+    #    'Users': output
+    #}
+     #       db.session.query(User).filter(User.id == user).update(
+     #       {User.rating: User.rating + reduce_points})
+    todo = TodoSchema(many=True)
+    id = request.json['id']
+    print("FUCCCCCK")
+    new_todo = db.session.query(Todo).filter(Todo.group_id == group_id).filter(id == item_id).update({
+        'status': request.json['status']
+    }, synchronize_session='fetch')
+    print("Todo Updated")
+    db.session.commit()
+    #result = todo.dump(new_todo)
+    return jsonify({'result': "hi"})
 
 @app.route('/projects/<group_id>/createpoll', methods=['POST'])
 def createPoll(group_id):
