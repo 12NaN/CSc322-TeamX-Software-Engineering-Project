@@ -608,11 +608,12 @@ def posts(group_id):
     user = request.json['user_id']
     name = request.json['user_name']
     group = request.json['group_id']
-
+    violation = False
     if reduce_points < 0:  # If the reduction_points is < 0, then reduce the necessary points to the user who used the taboo words
         print("POST VIOLATION:")
         print(words_found)
         updateRep(user, reduce_points)
+        violation = True
 
 #    date = request.json['date_posted']
     # Adding the new post along with the time stamp
@@ -624,7 +625,7 @@ def posts(group_id):
     print("Post_Added")
     result = post.dump(Post.query.filter_by(group_id=group_id))
     print(result)
-    return jsonify({'result': result})
+    return jsonify({'result': result, "clean":violation, "reduced": reduce_points})
 
 
 @app.route('/projects/<group_id>', methods=['POST'])
