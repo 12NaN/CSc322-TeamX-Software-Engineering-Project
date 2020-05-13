@@ -4,6 +4,7 @@ import Todo from './Todo';
 import Sections from './Sections';
 import Poll from './Poll';
 import PollSection from './PollSection';
+import VoteSection from './VoteSection';
 import Members from './Members';
 import Evaluations from './Evaluations';
 import Warnings from './Warnings';
@@ -104,6 +105,8 @@ class Group extends Component {
                 <Sections sectionName="Tasks" privacy={localStorage && this.state.memNames.length != 0 && localStorage.usertoken && this.state.memNames.includes(this.state.user_id)  ? false : this.state.visi_posts} component={<Todo group = {this.state.id}/>}/>
                 <hr></hr>
                 <Sections sectionName="Poll" privacy={localStorage && this.state.memNames.length != 0 && localStorage.usertoken && this.state.memNames.includes(this.state.user_id)  ? false : this.state.visi_posts} component={<PollSection group= {this.state.id}/>}/>
+                <hr></hr>
+                <Sections sectionName="Voting" privacy={localStorage && this.state.memNames.length != 0 && localStorage.usertoken && this.state.memNames.includes(this.state.user_id)  ? false : this.state.visi_posts} component={<VoteSection group= {this.state.id}/>}/>
                 <hr></hr>
                 <Sections sectionName="Evaluations" privacy={localStorage && this.state.memNames.length != 0 && localStorage.usertoken && this.state.memNames.includes(this.state.user_id)  ? false : this.state.visi_eval} component={<Evaluations/>}/>
                 <hr></hr>
