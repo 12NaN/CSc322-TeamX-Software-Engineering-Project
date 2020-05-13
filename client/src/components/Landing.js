@@ -39,7 +39,7 @@ class Landing extends Component {
             <img src={LOGO2} class='middle' style={{ height: "250px", width: "300px" }} />
 
             <hr />
-            <h4 className="text-center">Top 3 Rated Projects</h4>
+            <h4 className="text-center">Top 3 Rated User Profiles</h4>
             <CardDeck>
             <Cards name={this.state.profiles[0]["user_name"]} rating={this.state.profiles[0]["rating"]} id={this.state.profiles[0]["id"]} type={"user"}/>
             <Cards name={this.state.profiles[1]["user_name"]} rating={this.state.profiles[1]["rating"]} id={this.state.profiles[1]["id"]} type={"user"}/>
@@ -47,7 +47,7 @@ class Landing extends Component {
             </CardDeck>
             <hr />
             
-            <h4 className="text-center">Top 3 Rated User Profiles</h4>
+            <h4 className="text-center">Top 3 Rated Projects</h4>
             <CardDeck>
             <Cards name={this.state.groups[0]["group_name"]} rating={this.state.groups[0]["rating"]} id={this.state.groups[0]["group_id"]}  type={"project"}/>
             <Cards name={this.state.groups[1]["group_name"]}rating={this.state.groups[1]["rating"]} id={this.state.groups[1]["group_id"]}  type={"project"}/>

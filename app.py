@@ -698,13 +698,11 @@ def removeTodo(group_id, item_id):
     #db.session.query(Todo).filter(group_id == group_id).filter(id==item_id).delete(synchronize_session=False)
     # db.session.query(User).filter(User.id == user).update(
     #       {User.rating: User.rating + reduce_points})
-    #removeTodo = Todo.query.filter(group_id == group_id).filter(id==item_id)
+    removeTodo = Todo.query.filter(group_id == group_id).filter(id==item_id).delete()
     #removeTodo = db.session.query(Todo).filter(group_id == group_id).filter(id==item_id)
-    # db.session.delete(removeTodo)
     db.session.commit()
     todo = TodoSchema(many=True)
-    result = todo.dump(removeTodo)
-    print(Todo.query.filter(group_id == group_id).all())
+    result = todo.dump(Todo.query.filter(group_id == group_id).all())
     print("Todo removed")
     return jsonify(result)
 
@@ -792,14 +790,15 @@ def updateTodo(group_id, item_id):
     #       {User.rating: User.rating + reduce_points})
     todo = TodoSchema(many=True)
     id = request.json['id']
-    print("FUCCCCCK")
+    print("aaaah")
     new_todo = db.session.query(Todo).filter(Todo.group_id == group_id).filter(id == item_id).update({
         'status': request.json['status']
     }, synchronize_session='fetch')
     print("Todo Updated")
     db.session.commit()
-    #result = todo.dump(new_todo)
-    return jsonify({'result': "hi"})
+    new_todo = Todo.query.filter(group_id== group_id).filter(id == item_id)
+    result = todo.dump(new_todo)
+    return jsonify({'result': result})
 
 
 # This route puts data in the database regarding a newly created poll where

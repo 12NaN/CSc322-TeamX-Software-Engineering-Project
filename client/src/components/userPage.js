@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import Rating from './Ratings';
 import userimg from './ProfileImages/user.png'
+import {Link} from 'react-router';
 import axios from 'axios'
 
 class Profile extends Component {

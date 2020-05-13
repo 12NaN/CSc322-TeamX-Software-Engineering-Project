@@ -3,6 +3,7 @@ import {Card} from 'react-bootstrap';
 import Bryan from './ProfileImages/user.png';
 import { LetterAvatars } from './Groups/LetterAvatars';
 import {Link} from 'react-router-dom';
+import axios from 'axios';
 import Ratings from './Ratings';
 class Cards extends Component {
     constructor(props){
@@ -10,9 +11,21 @@ class Cards extends Component {
         this.state ={
             name: '',
             rating: 0,
+            group_id: this.props.group_id,
             dataFetched: false
-        }
 
+        }
+        this.handleOnClick = this.handleOnClick.bind(this);
+    }
+    handleOnClick(e){
+        e.preventDefault();
+
+        axios.post('/projects/create/mem',{
+            group_id: this.state.group_id,
+            user_id: this.props.id
+        }).then((r)=> {
+            console.log(r)
+        })                
     }
     componentDidMount(){
         this.setState({
@@ -40,7 +53,12 @@ class Cards extends Component {
                         <Card.Footer>
                         <Link to={this.props.type == "user" ? "/users/"+ this.props.id: "/projects/" + this.props.id}>
                                 View Page
-                        </Link>                 
+                        </Link>
+                        
+                        {this.props.invite == "yes" ?
+                        <Link onClick={this.handleOnClick}>
+                                                       <br/> Invite
+                        </Link> : ""}                   
                         </Card.Footer>
                     </Card>
                 </div>

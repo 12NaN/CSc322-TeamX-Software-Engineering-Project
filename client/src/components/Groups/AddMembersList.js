@@ -4,8 +4,10 @@ import {Link} from 'react-router-dom';
 import {Card, CardDeck, Button} from 'react-bootstrap';
 import axios from 'axios';
 class AddMembersList extends Component {
-    constructor(){
-        super();
+    constructor(props){
+        super(props);
+        console.log("hi")
+        console.log(this.props.location.state.group_id)
         this.state = {
             users: [],
             members: []
@@ -23,8 +25,7 @@ class AddMembersList extends Component {
     render() {
         let members = this.state.users.map((i) =>
         <div>
-            <Cards name={i["user_name"]} rating={i["rating"]} id={i["id"]} type={"user"}/>
-            <Link style={{"padding": "10px","backgroundColor":"purple","height":"40px", "width":"185px"}} to={''} className="btn btn-primary">Invite</Link>
+            <Cards name={i["user_name"]} rating={i["rating"]} id={i["id"]} type={"user"} invite={"yes"} group_id={this.props.location.state.group_id}/>
         </div>
         );
         return (

@@ -16,7 +16,8 @@ class CreateGroups extends Component {
             eval: false,
             warn: false,
             currentGroups: [],
-            created: false
+            created: false,
+            group_id: 0
         }
         this.handleNameChange = this.handleNameChange.bind(this);
         this.handleDescChange = this.handleDescChange.bind(this);
@@ -46,7 +47,7 @@ class CreateGroups extends Component {
         console.log(e.target.value)
         this.setState({warn: this.state.warn == true ? false: true});
     }
-
+    
     handleOnClick(e){
         e.preventDefault();
         if(!this.state.currentGroups.includes(this.state.name)){
@@ -77,7 +78,7 @@ class CreateGroups extends Component {
                     })
                 })    
             })
-            
+            console.log(this.state.group_id)
         }
         else{
             alert("That group name already exists!")
@@ -99,7 +100,7 @@ class CreateGroups extends Component {
         this.setState({
             currentGroups: groups
         })
- 
+        console.log(this.state.group_id)
     }
     render() {
         return (
@@ -151,7 +152,7 @@ class CreateGroups extends Component {
                 </Col>
                 </Form.Group>
                 <Link style={{"backgroundColor":"purple"}}  className="btn btn-primary" onClick={this.handleOnClick}>Submit</Link>
-                {this.state.created ? <Link style={{"backgroundColor":"purple"}} to={'/projects/create/addMembers'} className="btn btn-primary">Add Group Members</Link>: ""}
+                {this.state.created ? <Link style={{"backgroundColor":"purple"}} to={{pathname:'/projects/create/addMembers', state:{group_id: this.state.group_id}}} className="btn btn-primary">Add Group Members</Link>: ""}
                 <Link style={{"backgroundColor":"purple"}} to={'/projects'} className="btn btn-primary">Return to projects</Link>
 
                 </Form>
