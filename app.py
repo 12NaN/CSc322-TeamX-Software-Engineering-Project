@@ -1184,14 +1184,7 @@ def populate_table_data():
     db.session.add(todo3)
     db.session.add(todo4)
 
-    notification1 = Notification(
-        notif_id=1, id=1, group_id=3, sender_id=2, recipient_id=3, body='Hello Frank')
 
-    notification2 = Notification(
-        notif_id=2, id=2, group_id=3, sender_id=3, recipient_id=5, body='Hello Peter')
-
-    notification3 = Notification(
-        notif_id=3, id=3, group_id=3, sender_id=2, recipient_id=4, body='Hello Henry')
     notification1 = Notification(
         notif_id=1, id=1, sender_id=2, recipient_id=3, body='Hello Frank')
 

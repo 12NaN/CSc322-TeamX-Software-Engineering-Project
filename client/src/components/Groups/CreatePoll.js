@@ -5,15 +5,16 @@ import { NotificationContainer, NotificationManager } from 'react-notifications'
 import 'react-notifications/lib/notifications.css';
 import jwt_decode from 'jwt-decode';
 class PollForm extends Component {
+  
   constructor(props) {
         super(props);
-        const token = localStorage.usertoken
-        const decoded = jwt_decode(token)
+        //const token = localStorage.usertoken
+        //const decoded = jwt_decode(token)
         this.state = {
           group_id: '',   
           polls: [{ date: "", startTime: "", endTime: "" }],
           description: "",
-          user_id: decoded.identity.id
+          user_id: ""//decoded.identity.id
     };
   }
 
