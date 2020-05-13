@@ -48,7 +48,7 @@ class ApproveCard extends Component {
 
         let approve;
         let deny;
-        approve = <button onClick={this.onApprove} disabled={this.state.isDisabled} style={{ float: "right" }}>Accept</button>
+        approve = <button onClick={this.onApprove} disabled={this.state.isDisabled} style={{ float: "right" }}>Approve</button>
         deny = <button style={{ float: "right" }}>Decline</button>
         console.log(this.state.email);
         return (
@@ -58,6 +58,7 @@ class ApproveCard extends Component {
                     <Card.Body>
                         <p>User ID {this.state.id}</p>
                         <p>Email {this.state.email}</p>
+                        <p> A new user signed up! Awaiting your approval...</p>
                         <Card.Title>{this.state.name}</Card.Title>
                         <Card.Text>
 
@@ -71,11 +72,13 @@ class ApproveCard extends Component {
                     </Card.Body>
 
                     <Card.Footer>
-                        <Link to={this.props.type == "user" ? "/users/" + this.props.id : "/projects/" + this.props.id}>
+                        <Link to={"/users/" + this.props.id}>
                             View Page
+
+                            
                         </Link>
                         {approve}
-                        {deny}
+                            {deny}
                     </Card.Footer>
                 </Card>
 
