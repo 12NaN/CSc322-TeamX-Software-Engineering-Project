@@ -13,21 +13,22 @@ from flask_marshmallow import Marshmallow
 from marshmallow_sqlalchemy import ModelSchema
 from pymysql import NULL
 from flask_mail import Mail, Message
-import os.path
-from os import path
+import yagmail
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'mysecret'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
 
 
-app.config['SECRET_KEY'] = 'top-secret!'
-app.config['MAIL_SERVER'] = 'smtp.sendgrid.net'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'apikey'
-app.config['MAIL_PASSWORD'] = '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'
-app.config['MAIL_DEFAULT_SENDER'] = 'admin@friends.com'
+app.config.update({
+    'MAIL_SENDER': 'teamxfriends@yahoo.com',
+    'MAIL_SERVER': 'smtp.mail.yahoo.com',
+    'MAIL_PORT': '587',
+    'MAIL_USE_TLS': 'True',
+    'MAIL_USE_SSL': 'False',
+    'MAIL_USERNAME': 'MAIL_USERNAME',
+    'MAIL_PASSWORD': 'BryanArevalo123'})
 
 
 # API Key needed for the post function of the program
@@ -43,6 +44,7 @@ pusher = Pusher(
 mail = Mail(app)
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
+
 # In Python terminal "from app import db" then "db.create_all()"
 
 
@@ -488,23 +490,26 @@ def showNotifications():
 @app.route('/notifications', methods=['POST'])
 def approve():
     print("HELLO")
-    notif_id = request.json['notif_id']
+    email = request.json['email']
     id = request.json['id']
-    sender_id = request.json['sender_id']
-    recipient_id = request.json['recipient_id']
+    sender_id = 1
+    recipient_id = id
     body = "You have been approved"
-    print(notif_id)
 
-    """notification = Notification(
-        notif_id=notif_id, id=id, group_id=NULL, sender_id=sender_id, recipient_id=recipient_id, body=body)
+    notification = Notification(
+        id=4, group_id=NULL, sender_id=sender_id, recipient_id=recipient_id, body=body)
     db.session.add(notification)
-    db.session.commit()"""
-    msg = Message('You have been approved',
-                  recipients=['bareval001@citymail.cuny.edu'])
+    db.session.commit()
 
-    msg.body = 'This is a test email!'
-    msg.html = '<p>Your password is: password, your username is</p>'
-    mail.send(msg)
+    import smtplib
+    conn = smtplib.SMTP('smtp.gmail.com', 587)
+    type(conn)
+    conn.ehlo()
+    conn.starttls()
+    conn.login('bryarebryare@gmail.com', 'lrdyjaqhafhluolu')
+    conn.sendmail('bryarebryare@gmail.com',
+                  'bareval001@citymail.cuny.edu', 'Subject:')
+    conn.quit()
 
     result = {
         'id': id,
