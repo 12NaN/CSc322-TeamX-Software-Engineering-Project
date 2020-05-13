@@ -13,23 +13,10 @@ from flask_marshmallow import Marshmallow
 from marshmallow_sqlalchemy import ModelSchema
 from pymysql import NULL
 from flask_mail import Mail, Message
-import yagmail
-
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'mysecret'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
-
-
-app.config.update({
-    'MAIL_SENDER': 'teamxfriends@yahoo.com',
-    'MAIL_SERVER': 'smtp.mail.yahoo.com',
-    'MAIL_PORT': '587',
-    'MAIL_USE_TLS': 'True',
-    'MAIL_USE_SSL': 'False',
-    'MAIL_USERNAME': 'MAIL_USERNAME',
-    'MAIL_PASSWORD': 'BryanArevalo123'})
-
 
 # API Key needed for the post function of the program
 pusher = Pusher(
@@ -40,12 +27,13 @@ pusher = Pusher(
     ssl=True
 )
 
+# In Python terminal "from app import db" then "db.create_all()"
 
-mail = Mail(app)
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
 
-# In Python terminal "from app import db" then "db.create_all()"
+
+# This class creates the User table in SQLITE
 
 
 class User(db.Model):
@@ -80,6 +68,7 @@ class User(db.Model):
         # String representation of a query
         return f"User('{self.user_name}', '{self.email}', '{self.image_file}','{self.rating}')"
 
+
 # This class creates the BlackBox table in SQLITE
 
 
@@ -94,6 +83,7 @@ class BlackBox(db.Model):
     def __repr__(self):
         return f"BlackBox('{self.user_id}','{self.blkbxd_prsn_id}','{self.group_id}')"
 
+
 # This class creates the BlackList table in SQLITE
 
 
@@ -105,6 +95,7 @@ class BlackList(db.Model):
 
     def __repr__(self):
         return f"BlackList('{self.user_id}', {self.user_name})"
+
 
 # This class creates the Groups table in SQLITE
 
@@ -123,6 +114,9 @@ class Groups(db.Model):
         return f"Groups('{self.group_id}')"
 
 
+# This class creates the GroupMembers table in SQLITE
+
+
 class GroupMembers(db.Model):
     group_id = db.Column(db.Integer, db.ForeignKey(
         'groups.group_id'), primary_key=True)
@@ -131,6 +125,9 @@ class GroupMembers(db.Model):
 
     def __repr__(self):
         return f"GroupMembers('{self.group_id}')"
+
+
+# This class creates the Poll table in SQLITE
 
 
 class Poll(db.Model):
@@ -143,6 +140,9 @@ class Poll(db.Model):
         return f"Poll('{self.desc}', '{self.group_id}')"
 
 
+# This class creates the PollOptions table in SQLITE
+
+
 class PollOptions(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     option = db.Column(db.String(100), nullable=False)
@@ -153,7 +153,8 @@ class PollOptions(db.Model):
     def __repr__(self):
         return f"PollOptions('{self.option}', '{self.poll_id}', '{self.votes}')"
 
-# This class creates the Post table in SQLITE
+
+# This class creates the VoteHandle table in SQLITE
 
 
 class VoteHandle(db.Model):
@@ -176,6 +177,9 @@ class VoteHandle(db.Model):
         return f"VoteHandle('{self.vote_id}', '{self.desc}', '{self.user_id_issuer}', '{self.user_id_subject}', '{self.group_id_subject}', '{self.vote_type}', '{self.vote_yes}', '{self.vote_no}', '{self.status}')"
 
 
+# This class creates the Voters table in SQLITE
+
+
 class Voters(db.Model):
     vote_id = db.Column(db.Integer, db.ForeignKey(
         'vote_handle.vote_id'), primary_key=True)
@@ -186,6 +190,9 @@ class Voters(db.Model):
 
     def __repr__(self):
         return f"Voters('{self.vote_id}', '{self.user_id}', '{self.status}')"
+
+
+# This class creates the Notification table in SQLITE
 
 
 class Notification(db.Model):
@@ -203,6 +210,9 @@ class Notification(db.Model):
         return '<Message {}>'.format(self.body)
 
 
+# This class creates the Post table in SQLITE
+
+
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
@@ -216,8 +226,6 @@ class Post(db.Model):
 
     def __repr__(self):
         return f"Post('{self.title}', '{self.content}', '{self.user_id}', '{self.user_name}', {self.group_id}, '{self.date_posted}')"
-
-# This class creates the User table in SQLITE
 
 
 # This class creates the WhiteBox table in SQLITE
@@ -234,6 +242,7 @@ class WhiteBox(db.Model):
     def __repr__(self):
         return f"WhiteBox('{self.user_id}','{self.whtbxd_prsn_id}','{self.group_id}')"
 
+
 # This class creates the Results table in SQLITE
 
 
@@ -241,6 +250,9 @@ class Results(db.Model):
     __tablename__ = 'results'
     id = db.Column('id', db.Integer, primary_key=True)
     vote = db.Column('data', db.Integer)
+
+
+# This class creates the Todo table in SQLITE
 
 
 class Todo(db.Model):
@@ -253,6 +265,8 @@ class Todo(db.Model):
     group_id = db.Column(db.Integer, db.ForeignKey(
         'groups.group_id', ondelete="CASCADE"))
 
+
+# Generate marshmallow Schemas from your models using SQLAlchemySchema.
 
 class UserSchema(ma.SQLAlchemySchema):
     class Meta:
@@ -350,8 +364,12 @@ def handleVote(ballot):
     emit('vote_results', {'Monday': mon, 'Tuesday': tue, 'Wednesday': wed,
                           'Thursday': thur, 'Friday': fri, 'Saturday': sat, 'Sunday': sun}, broadcast=True)
 """
+
+
 # The register() function grabs the input from the register UI page and stores them in a database. Also
 # the password is hashed using an API.
+
+
 @app.route('/users/register', methods=['POST'])
 def register():
     print(request.get_json())
@@ -408,6 +426,8 @@ def register():
     return jsonify({'result': result})
 
 
+# The groups() function gets all of the groups from the database.
+
 @app.route('/projects', methods=['GET'])
 def groups():
     groups = Groups.query.order_by(Groups.rating)
@@ -417,6 +437,8 @@ def groups():
         'Groups': output
     }
     return jsonify(result)
+
+# The create() function instantiates a new group page with all user settings personalized and puts it in the database.
 
 
 @app.route('/projects/create', methods=['POST'])
@@ -458,6 +480,8 @@ def create():
     return jsonify({'result': result})
 
 
+# The profiles() function gets all of the user profiles.
+
 @app.route('/users', methods=['GET'])
 def profiles():
     users = User.query.order_by(User.rating)
@@ -468,6 +492,8 @@ def profiles():
     }
     return jsonify(result)
 
+
+# The notifications() function gets all of the functions and users to be displayed on the notifications page.
 
 @app.route('/notifications', methods=['GET'])
 def showNotifications():
@@ -485,6 +511,8 @@ def showNotifications():
     }
 
     return jsonify(result)
+
+# The approve() function gets the data of a user that has been approved and sends them an email and a notification.
 
 
 @app.route('/notifications', methods=['POST'])
@@ -521,6 +549,9 @@ def approve():
     return jsonify(result)
 
 
+# The profile(used_id) retreives all associated data with the user such as the groups theyre involved in,
+# the white box people and black box people.
+
 @app.route("/users/<user_id>", methods=['GET'])
 def profile(user_id):
     user = User.query.filter_by(id=user_id)
@@ -552,6 +583,9 @@ def profile(user_id):
     }
     return jsonify(result)
 
+
+# The groupsPage(id) function retrieves all of the groups and associated data for the groups,
+# such as users, polls, votes.
 
 @app.route("/projects/<id>", methods=['GET'])
 def groupsPage(id):
@@ -591,6 +625,9 @@ def groupsPage(id):
     return jsonify(result)
 
 
+# The profilesAndGroups() function gets all of the users and groups and displayed the top rated profiles in
+# the landing page.
+
 @app.route('/', methods=['GET'])
 def profilesAndGroups():
     users = User.query.order_by(User.rating).limit(3)
@@ -606,6 +643,7 @@ def profilesAndGroups():
     }
 
     return result
+
 # This route redirects the login function to be used at the /users/login page
 
 
@@ -629,6 +667,7 @@ def login():
         result = jsonify({"error": "Invalid username and password"})
 
     return result
+
 # This route redirects the removeToDo function to be used at the group page
 
 
@@ -642,6 +681,8 @@ def removeTodo(group_id, item_id):
     # endpoint for updating todo item
 
 
+# This route redirects a user to a group page for a specific group.
+
 @app.route('/projects/<group_id>', methods=['GET'])
 def getTodo(group_id):
     todo = Todo.query.filter_by(group_id=group_id)
@@ -652,6 +693,8 @@ def getTodo(group_id):
         'Todo': output
     }
     return result
+
+# This route posts data into a database regarding the action of a user in the group.
 
 
 @app.route('/projects/<group_id>', methods=['POST'])
@@ -703,12 +746,15 @@ def posts(group_id):
     return jsonify({'result': result, "clean": violation, "reduced": reduce_points})
 
 
+
 @app.route('/projects/<group_id>', methods=['POST'])
 def addTodo():
     data = json.loads(request.data)  # load JSON data from request
     # trigger `item-added` event on `todo` channel
     pusher.trigger('room', 'item-added', data)
     return jsonify(data)
+
+
 # This route redirects the updateToDo function to be used at the group page
 
 
@@ -723,6 +769,9 @@ def updateTodo(group_id):
     print("pushed")
     return jsonify(data)
 
+
+# This route puts data in the database regarding a newly created poll where
+# users can vote.
 
 @app.route('/projects/<group_id>/createpoll', methods=['POST'])
 def createPoll(group_id):
@@ -773,6 +822,8 @@ def createPoll(group_id):
     return jsonify({'result': results})
 
 
+# This route gets a specific groups poll on displays it on the respective group page.
+
 @app.route('/projects/<group_id>/poll/<poll_id>', methods=['GET'])
 def getpoll(group_id, poll_id):
     placeholder = poll_id
@@ -792,6 +843,8 @@ def getpoll(group_id, poll_id):
     return jsonify(result)
 
 
+# This route posts data collected from the poll into a database.
+
 @app.route('/projects/<group_id>/poll/<poll_id>', methods=['POST'])
 def pollvote(group_id, poll_id):
     placeholder = poll_id
@@ -810,6 +863,9 @@ def pollvote(group_id, poll_id):
     return jsonify({'result': results})
 
 
+# This route displays the users and members in a group so that they can be
+# displayed when going to give a complaint/warning/praise
+
 @app.route('/projects/<group_id>/createissue/handler', methods=['GET'])
 def createissues(group_id):
     placeholder = group_id
@@ -823,6 +879,9 @@ def createissues(group_id):
     }
     return jsonify(results)
 
+
+# This route posts the information collected from a user regarding the actions
+# they performed in the create issue page.
 
 @app.route('/projects/<group_id>/createissue/handler', methods=['POST'])
 def issuedvote(group_id):
@@ -850,18 +909,23 @@ def issuedvote(group_id):
     results = vote.dump(VoteHandle.query.filter_by(group_id_subject=group))
     return jsonify({'result': results})
 
+
+# This route gets voters who voted in a poll.
+
 @app.route("/projects/<group_id>/votefor/issue/<vote_id>", methods=['GET'])
 def voteresponder(group_id, vote_id):
     placeholder = vote_id
-    p2=group_id
+    p2 = group_id
     votes = VoteHandle.query.filter_by(vote_id=placeholder)
     voters = Voters.query.filter_by(vote_id=placeholder)
-    users = User.query.join(Voters, User.id==Voters.user_id).filter_by(vote_id=placeholder)  
-    users2 = User.query.join(GroupMembers, User.id==GroupMembers.user_id).filter_by(group_id=p2)
+    users = User.query.join(
+        Voters, User.id == Voters.user_id).filter_by(vote_id=placeholder)
+    users2 = User.query.join(GroupMembers, User.id ==
+                             GroupMembers.user_id).filter_by(group_id=p2)
     pl = VoteHandleSchema(many=True)
     plo = VotersSchema(many=True)
     u = UserSchema(many=True)
-    u2= UserSchema(many=True)
+    u2 = UserSchema(many=True)
     output1 = pl.dump(votes)
     output2 = plo.dump(voters)
     output3 = u.dump(users)
@@ -871,36 +935,41 @@ def voteresponder(group_id, vote_id):
         'VoteInfo': output1,
         "Voters": output2,
         'Users': output3,
-        "Members":output4
+        "Members": output4
     }
     print(result['VoteInfo'])
     print(result['Voters'])
     return jsonify(result)
 
+# This route records voters reponses.
+
+
 @app.route("/projects/<group_id>/votefor/issue/<vote_id>", methods=['POST'])
 def pushvote(group_id, vote_id):
     placeholder = vote_id
-    p2=group_id
+    p2 = group_id
     vote = VoteHandleSchema()
     voters = VotersSchema()
-    data = request.json['NewVoteData'] 
+    data = request.json['NewVoteData']
     voter = request.json['user_id_access']
-    casted_vote = VoteHandle.query.filter_by(vote_id = placeholder)
+    casted_vote = VoteHandle.query.filter_by(vote_id=placeholder)
     v1 = VoteHandleSchema(many=True)
     inputinto = v1.dump(casted_vote)
     print(inputinto[0]['vote_id'])
     print(data)
-    update = VoteHandle.query.filter_by(vote_id = inputinto[0]['vote_id']).first()
+    update = VoteHandle.query.filter_by(
+        vote_id=inputinto[0]['vote_id']).first()
     update.vote_yes = data[0]['votes']
     db.session.commit()
-    update2 = VoteHandle.query.filter_by(vote_id = inputinto[0]['vote_id']).first()
+    update2 = VoteHandle.query.filter_by(
+        vote_id=inputinto[0]['vote_id']).first()
     update2.vote_no = data[1]['votes']
-    update3 = Voters.query.filter_by(vote_id=placeholder, user_id=voter).first()
+    update3 = Voters.query.filter_by(
+        vote_id=placeholder, user_id=voter).first()
     update3.status = int(1)
     db.session.commit()
     results = voters.dump(Voters.query.filter_by(vote_id=placeholder))
     return jsonify({'result': results})
-    
 
 
 # This route redirects the account function to be used at the profile page
@@ -911,7 +980,8 @@ def account():
     image_file = url_for(
         'static', filename='client/src/components/ProfileImages/user.jpg')
 
-# SUPPLEMENTARY FUNCTIONS FOR ACCOUNT RETRIEVAL-------------------------
+
+# ---------------------------- SUPPLEMENTARY FUNCTIONS FOR ACCOUNT RETRIEVAL-------------------------
 
 
 def pointDeduction(user_name, guilty_words):
