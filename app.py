@@ -915,7 +915,7 @@ def pollvote(group_id, poll_id):
 def createissues(group_id):
     placeholder = group_id
     users = UserSchema()
-    members = User.query.join(GroupMembers, User.id == GroupMembers.user_id)
+    members = User.query.join(GroupMembers, User.id == GroupMembers.user_id).filter_by(group_id = placeholder)
     u = UserSchema(many=True)
     output1 = u.dump(members)
     print(output1)
