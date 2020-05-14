@@ -41,6 +41,12 @@ class Forms extends Component {
                     console.log("YOU SAID SOMETHING BAD!")
                     NotificationManager.warning("Penalty: "+ r.data.reduced, "WARNING: TABOO WORD USED");
                 }
+                else if(r.data.removetoken == true){
+                  console.log("YOU HAVE BEEN BLACKLISTED!!!!!!!!!");
+                  localStorage.removeItem('usertoken');
+                  window.location.replace("localhost:3000/projects/"+ this.state.group_id);
+                  NotificationManager.warning("YOU HAVE BEEN BLACKLISTED!", "BLACKLISTED");
+                }
 
             })
             this.setState({

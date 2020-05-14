@@ -721,7 +721,6 @@ def removeTodo(group_id, item_id):
 
 @app.route('/projects/<group_id>', methods=['POST'])
 def posts(group_id):
-  #  id = request.json['id']
     post = PostSchema()
     taboo = open('taboo.txt', 'r')
     title = request.json['title']
@@ -729,14 +728,9 @@ def posts(group_id):
     user = request.json['user_id']
     name = request.json['user_name']
     group = request.json['group_id']
-
-    if(in_blacklist(user) == True):
-        print("USER IS IN BLACK LIST NOW")
-
-
     date_posted = datetime.strptime(
         request.json['date_posted'], "%a, %d %b %Y %H:%M:%S %Z")
-    print(date_posted)
+
     reduce_points = 0  # Amount of points to reduce if taboo word is found
     taboo_found = []
     for line in taboo:
@@ -759,8 +753,6 @@ def posts(group_id):
         updateRep(user, reduce_points)
         violation = True
 
-#    date = request.json['date_posted']
-    # Adding the new post along with the time stamp
     new_post = Post(title=title, date_posted=date_posted,
                     content=content, user_id=user, user_name=name, group_id=group)
     db.session.add(new_post)
@@ -769,6 +761,13 @@ def posts(group_id):
     print("Post_Added")
     result = post.dump(Post.query.filter_by(group_id=group_id))
     print(result)
+
+
+    if(in_blacklist(user) == True):
+        return jsonify({'removetoken':True})
+
+
+
     return jsonify({'result': result, "violation": violation, "reduced": reduce_points})
 
 
@@ -1029,9 +1028,14 @@ def account():
 # ---------------------------- SUPPLEMENTARY FUNCTIONS FOR ACCOUNT RETRIEVAL-------------------------
 def in_blacklist(user_id):
     user_data = User.query.filter_by(id=user_id).first()  # Might need exception handling
+    
     print(user_data.user_name)
     if (user_data.rating < 0):
-        print("IS GETTING BLACKLISTED")
+        new_blacklist = BlackList(user_id=user_data.id, user_name=user_data.user_name)
+        db.session.add(new_blacklist)
+        db.session.commit()
+        find_new_blacklist = BlackList.query.filter_by(user_id=user_data.id).first()
+        print("USER HAS BEEN BLACKLISTED")
         return True
     else:
         print("IS NOT BLACKLISTED")
