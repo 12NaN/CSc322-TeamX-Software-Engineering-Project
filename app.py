@@ -15,6 +15,7 @@ from pymysql import NULL
 from flask_mail import Mail, Message
 import os.path
 from os import path
+import smtplib
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'mysecret'
@@ -539,22 +540,26 @@ def approve():
     id = request.json['id']
     sender_id = 1
     recipient_id = id
+    notif_type = request.json['type']
     body = "You have been approved"
-
-    notification = Notification(
-        id=4, group_id=NULL, sender_id=sender_id, recipient_id=recipient_id, body=body)
-    db.session.add(notification)
-    db.session.commit()
-
-    import smtplib
-    conn = smtplib.SMTP('smtp.gmail.com', 587)
-    type(conn)
-    conn.ehlo()
-    conn.starttls()
-    conn.login('bryarebryare@gmail.com', 'lrdyjaqhafhluolu')
-    conn.sendmail('bryarebryare@gmail.com',
-                  'bareval001@citymail.cuny.edu', 'Subject:')
-    conn.quit()
+    if(notif_type >= 0):
+        notification = Notification(
+            id=notif_type, group_id=NULL, sender_id=sender_id, recipient_id=recipient_id, body=body)
+        db.session.add(notification)
+        db.session.commit()
+        if(notif_type >= 0):
+            conn = smtplib.SMTP('smtp.gmail.com', 587)
+            type(conn)
+            conn.ehlo()
+            conn.starttls()
+            conn.login('bryarebryare@gmail.com', 'lrdyjaqhafhluolu')
+            conn.sendmail('bryarebryare@gmail.com',
+                          'bareval001@citymail.cuny.edu', 'Subject:')
+            conn.quit()
+    else:
+        body = "DENIED. FILE AN APPEAL."
+        notification = Notification(
+            id=notif_type, group_id=NULL, sender_id=sender_id, recipient_id=recipient_id, body=body)
 
     result = {
         'id': id,
@@ -675,7 +680,8 @@ def login():
     password = request.get_json()['password']
 
     result = ""
-
+    members = User.query.join(GroupMembers, User.id == GroupMembers.user_id)
+   #notifications = User.query.filter_by(Notification, User.id == Notification.recipient_id )
     user = User.query.filter_by(email=str(email)).first()
     banned_emails = getBlackListEmails(email)
     if (email in banned_emails):
@@ -701,7 +707,8 @@ def removeTodo(group_id, item_id):
     #db.session.query(Todo).filter(group_id == group_id).filter(id==item_id).delete(synchronize_session=False)
     # db.session.query(User).filter(User.id == user).update(
     #       {User.rating: User.rating + reduce_points})
-    removeTodo = Todo.query.filter(group_id == group_id).filter(id==item_id).delete()
+    removeTodo = Todo.query.filter(
+        group_id == group_id).filter(id == item_id).delete()
     #removeTodo = db.session.query(Todo).filter(group_id == group_id).filter(id==item_id)
     db.session.commit()
     todo = TodoSchema(many=True)
@@ -774,7 +781,7 @@ def addTodo(group_id):
                     user_id=user_id, status=status, group_id=group_id)
     db.session.add(new_todo)
     db.session.commit()
-    new_todo = Todo.query.filter(group_id==group_id)
+    new_todo = Todo.query.filter(group_id == group_id)
     print("New Todo added")
     result = todo.dump(new_todo)
     return jsonify({'result': result})
@@ -799,7 +806,7 @@ def updateTodo(group_id, item_id):
     }, synchronize_session='fetch')
     print("Todo Updated")
     db.session.commit()
-    new_todo = Todo.query.filter(group_id== group_id).filter(id == item_id)
+    new_todo = Todo.query.filter(group_id == group_id).filter(id == item_id)
     result = todo.dump(new_todo)
     return jsonify({'result': result})
 
