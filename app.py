@@ -401,7 +401,7 @@ def register():
 
     # The user_name is not black listed and is added to the database
     user = User(user_name=user_name, first_name=first_name, last_name=last_name, email=email,
-                password=password, interest=interest, references=references, user_type=user_type, rating=rating)  # , created=created)
+                password="password", interest=interest, references=references, user_type=user_type, rating=rating)  # , created=created)
     db.session.add(user)
     db.session.commit()
 
@@ -555,7 +555,7 @@ def approve():
             conn.starttls()
             conn.login('bryarebryare@gmail.com', 'lrdyjaqhafhluolu')
             conn.sendmail('bryarebryare@gmail.com',
-                          'bareval001@citymail.cuny.edu', 'Subject:')
+                          email, 'Subject:', "PASSWORD")
             conn.quit()
     else:
         body = "DENIED. FILE AN APPEAL."
@@ -682,7 +682,7 @@ def login():
 
     result = ""
     members = User.query.join(GroupMembers, User.id == GroupMembers.user_id)
-   #notifications = User.query.filter_by(Notification, User.id == Notification.recipient_id )
+    
     user = User.query.filter_by(email=str(email)).first()
     banned_emails = getBlackListEmails(email)
     if (email in banned_emails):
@@ -721,6 +721,7 @@ def removeTodo(group_id, item_id):
 
 @app.route('/projects/<group_id>', methods=['POST'])
 def posts(group_id):
+  #  id = request.json['id']
     post = PostSchema()
     taboo = open('taboo.txt', 'r')
     title = request.json['title']
@@ -728,9 +729,10 @@ def posts(group_id):
     user = request.json['user_id']
     name = request.json['user_name']
     group = request.json['group_id']
+
     date_posted = datetime.strptime(
         request.json['date_posted'], "%a, %d %b %Y %H:%M:%S %Z")
-
+    print(date_posted)
     reduce_points = 0  # Amount of points to reduce if taboo word is found
     taboo_found = []
     for line in taboo:
@@ -753,6 +755,8 @@ def posts(group_id):
         updateRep(user, reduce_points)
         violation = True
 
+#    date = request.json['date_posted']
+    # Adding the new post along with the time stamp
     new_post = Post(title=title, date_posted=date_posted,
                     content=content, user_id=user, user_name=name, group_id=group)
     db.session.add(new_post)
@@ -761,13 +765,6 @@ def posts(group_id):
     print("Post_Added")
     result = post.dump(Post.query.filter_by(group_id=group_id))
     print(result)
-
-
-    if(in_blacklist(user) == True):
-        return jsonify({'removetoken':True})
-
-
-
     return jsonify({'result': result, "violation": violation, "reduced": reduce_points})
 
 
@@ -914,7 +911,7 @@ def pollvote(group_id, poll_id):
 def createissues(group_id):
     placeholder = group_id
     users = UserSchema()
-    members = User.query.join(GroupMembers, User.id == GroupMembers.user_id).filter_by(group_id = placeholder)
+    members = User.query.join(GroupMembers, User.id == GroupMembers.user_id)
     u = UserSchema(many=True)
     output1 = u.dump(members)
     print(output1)
@@ -1026,20 +1023,7 @@ def account():
 
 
 # ---------------------------- SUPPLEMENTARY FUNCTIONS FOR ACCOUNT RETRIEVAL-------------------------
-def in_blacklist(user_id):
-    user_data = User.query.filter_by(id=user_id).first()  # Might need exception handling
-    
-    print(user_data.user_name)
-    if (user_data.rating < 0):
-        new_blacklist = BlackList(user_id=user_data.id, user_name=user_data.user_name)
-        db.session.add(new_blacklist)
-        db.session.commit()
-        find_new_blacklist = BlackList.query.filter_by(user_id=user_data.id).first()
-        print("USER HAS BEEN BLACKLISTED")
-        return True
-    else:
-        print("IS NOT BLACKLISTED")
-        return False
+
 
 def pointDeduction(user_name, guilty_words):
     if len(guilty_words) == 0 or "".join(guilty_words).isspace():
