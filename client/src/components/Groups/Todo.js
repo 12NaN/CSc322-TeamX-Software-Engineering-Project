@@ -76,7 +76,8 @@ function Todo(props) {
 
     const completeTask = index => {
         const newTasks = [...tasks];
-        newTasks[index].status = 1;
+        newTasks[index].status = newTasks[index].status == 1 ? 0 : 1;
+        console.log(newTasks[index]["id"])
         axios.post(`/projects/${props.group}/update-todo/${newTasks[index]["id"]}`, {
             id: newTasks[index]["id"],
             text: newTasks[index]["text"],
@@ -91,7 +92,7 @@ function Todo(props) {
 
     const removeTask = index => {
         const newTasks = [...tasks];
-
+        console.log(newTasks[index]["id"])
         axios.post(`/projects/${props.group}/remove-todo/${newTasks[index]["id"]}`, {
             id: newTasks[index]["id"]
         }).then(r =>
