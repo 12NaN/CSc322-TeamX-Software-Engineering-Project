@@ -47,8 +47,7 @@ class Forms extends Component {
                 title: '',
                 content: ''
             })
-          }
-          
+          }          
       }
       // Custom static function that timestamps a post .. Can we move to UserFunctions.js??
       static getDateTime(){

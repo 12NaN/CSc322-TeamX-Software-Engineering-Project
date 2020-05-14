@@ -270,7 +270,7 @@ class Todo(db.Model):
 
 class UserSchema(ma.SQLAlchemySchema):
     class Meta:
-        fields = ('id', 'user_name', 'email', 'interest', 'rating')
+        fields = ('id', 'user_name', 'email', 'interest', 'rating', 'user_type')
 
 
 class GroupSchema(ma.SQLAlchemySchema):
@@ -692,14 +692,14 @@ def login():
 
 @app.route("/projects/<group_id>/remove-todo/<item_id>", methods=["POST"])
 def removeTodo(group_id, item_id):
-    data = {'id': item_id}
     print(group_id)
     print(item_id)
     #db.session.query(Todo).filter(group_id == group_id).filter(id==item_id).delete(synchronize_session=False)
     # db.session.query(User).filter(User.id == user).update(
     #       {User.rating: User.rating + reduce_points})
-    removeTodo = Todo.query.filter(group_id == group_id).filter(id==item_id).delete()
+    #removeTodo = Todo.query.filter(group_id == group_id).filter(id==item_id).delete(synchronize_session=False)
     #removeTodo = db.session.query(Todo).filter(group_id == group_id).filter(id==item_id)
+    Todo.query.filter_by(group_id = group_id, id=item_id).delete()
     db.session.commit()
     todo = TodoSchema(many=True)
     result = todo.dump(Todo.query.filter(group_id == group_id).all())
@@ -789,7 +789,7 @@ def updateTodo(group_id, item_id):
     #       db.session.query(User).filter(User.id == user).update(
     #       {User.rating: User.rating + reduce_points})
     todo = TodoSchema(many=True)
-    id = request.json['id']
+  #  id = request.json['id']
     print("aaaah")
     new_todo = db.session.query(Todo).filter(Todo.group_id == group_id).filter(id == item_id).update({
         'status': request.json['status']
