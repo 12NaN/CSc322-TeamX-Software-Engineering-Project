@@ -29,6 +29,7 @@ class CreateIssueVote extends Component {
 
  handleChange = e => {
       this.setState({subject_name: e.target.value });
+      console.log(this.state.subject_name)
   }
 
  handleChange2 = e => {
