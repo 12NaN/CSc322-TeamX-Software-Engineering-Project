@@ -773,9 +773,12 @@ def posts(group_id):
                     content=content, user_id=user, user_name=name, group_id=group)
     db.session.add(new_post)
     db.session.commit()
-
     print("Post_Added")
     result = post.dump(Post.query.filter_by(group_id=group_id))
+    
+    if(in_blacklist(user) == True):
+        return jsonify({'removetoken':True})
+
     print(result)
     return jsonify({'result': result, "violation": violation, "reduced": reduce_points})
 
@@ -1094,7 +1097,21 @@ def pointDeduction(user_name, guilty_words):
         return -1 * len(content_lines)
 
 # Updates the reputation points of a particular user given their id
+def in_blacklist(user_id):
 
+    user_data = User.query.filter_by(id=user_id).first()  # Might need exception handling
+
+    print(user_data.user_name)
+    if (user_data.rating < 0):
+        new_blacklist = BlackList(user_id=user_data.id, user_name=user_data.user_name)
+        db.session.add(new_blacklist)
+        db.session.commit()
+        find_new_blacklist = BlackList.query.filter_by(user_id=user_data.id).first()
+        print("USER HAS BEEN BLACKLISTED")
+        return True
+    else:
+        print("IS NOT BLACKLISTED")
+        return False
 
 def updateRep(user_id, rep_points):
     modify_user = User.query.get_or_404(
