@@ -816,9 +816,13 @@ def updateTodo(group_id, item_id):
     todo = TodoSchema(many=True)
   #  id = request.json['id']
     print("aaaah")
+    #users = User.query.filter_by(id = request.json['user_id']).update({'rating': request.json['rating']})
+    new_todo = Todo.query.filter(group_id == group_id).filter(id == item_id).update({'status': request.json['status']}, synchronize_session='fetch')
+    """
     new_todo = db.session.query(Todo).filter(Todo.group_id == group_id).filter(id == item_id).update({
         'status': request.json['status']
     }, synchronize_session='fetch')
+    """
     print("Todo Updated")
     db.session.commit()
     new_todo = Todo.query.filter(group_id == group_id).filter(id == item_id)
