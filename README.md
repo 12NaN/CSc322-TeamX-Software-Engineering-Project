@@ -21,7 +21,7 @@ This project, named 'Friends' is built in compliance with Project Requirements S
 You must have pip from python3 installed and the following packages:
 - pip install flask
 - pip install sqlalchemy
-In root folder run "pip install -r requirements.txt" to install python packages.
+- In root folder run "pip install -r requirements.txt" to install python packages.
 
 Once you have downloaded Node.js from the links below, or if you have Node.js installed:
 
