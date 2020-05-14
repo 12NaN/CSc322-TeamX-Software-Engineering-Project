@@ -21,18 +21,19 @@ This project, named 'Friends' is built in compliance with Project Requirements S
 You must have pip from python3 installed and the following packages:
 - pip install flask
 - pip install sqlalchemy
+In root folder run "pip install -r requirements.txt" to install python packages.
 
 Once you have downloaded Node.js from the links below, or if you have Node.js installed:
 
 - (npx create-react-app client)
 
-Electron Setup:
+Electron/React Setup:
 1) git clone https://github.com/12NaN/CSc322-TeamX-Software-Engineering-Project.git
 2) cd CSc322-TeamX-Software-Engineering-Project
-3) npm i 
+3) "npm i" 
 4) cd Client 
-5) npm i 
-6) npm run start
+5) "npm i" 
+6) "npm run start" to run the React app (To run Electron (Desktop app), run "npm run start" in root folder)
 
 DB in Python:
 1) Open Python3
