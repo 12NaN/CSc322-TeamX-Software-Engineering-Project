@@ -26,26 +26,24 @@ class Login extends Component {
       email: this.state.email,
       password: this.state.password
     }
-
     login(user).then(res => {
-      if(typeof res == 'string' || res instanceof String){
-        if(res == "LOGIN_ERROR"){
-          NotificationManager.warning("Incorrect user credentials.", "Login Error");
-        }
-        else if(res == "LOGIN_BANNED"){
-          NotificationManager.warning("Your account has been blacklisted.", "Black listed");
-        }
+      if (res == "LOGIN_ERROR") {
+        NotificationManager.warning("Incorrect user credentials.", "Login Error");
+      }
+      else if (res == "LOGIN_BANNED") {
+        NotificationManager.warning("Your account has been blacklisted.", "Black listed");
       }
       else if (!res.error) {
         this.props.history.push(`/profile`)
       }
     })
+
   }
 
   render() {
     return (
       <div className="container">
-        <NotificationContainer/>
+        <NotificationContainer />
         <div className="row">
           <div className="col-md-6 mt-5 mx-auto">
             <form noValidate onSubmit={this.onSubmit}>
@@ -75,7 +73,7 @@ class Login extends Component {
               <button
                 type="submit"
                 className="btn btn-lg btn-primary btn-block"
-                style={{"backgroundColor":"purple"}}
+                style={{ "backgroundColor": "purple" }}
               >
                 Sign in
               </button>
