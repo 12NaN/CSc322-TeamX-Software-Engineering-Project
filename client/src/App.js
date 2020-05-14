@@ -19,8 +19,6 @@ import PollVote from './components/Groups/PollVote'
 import CreateIssueVote from './components/Groups/CreateIssue'
 import VoteIssue from './components/Groups/VoteIssue'
 
-
-
 class App extends Component {
   render() {
     return (

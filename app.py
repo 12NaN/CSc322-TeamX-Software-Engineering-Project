@@ -496,6 +496,18 @@ def createMem():
     result = mem.dump(GroupMembers.query.filter_by(group_id=group))
     return jsonify({"result": result})
 
+@app.route('/users', methods=['POST'])
+def rating():
+
+    users = User.query.filter_by(id = request.json['user_id']).update({'rating': request.json['rating']})
+    db.session.commit()
+    user = UserSchema(many=True)
+    print(request.json['user_id'])
+    output = user.dump(User.query.filter(id == request.json['user_id']))
+    result = {
+        'Users': output
+    }
+    return jsonify(result)
 # This route displays users on the users page.
 
 

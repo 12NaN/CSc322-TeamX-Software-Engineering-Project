@@ -129,7 +129,7 @@ class Profile extends Component {
               </tr>
               <tr>
                 <td>User Type</td>
-                <td>{this.state.rating > 30 ? 'VIP' : 'Ordinary User'}</td>
+                <td>{this.state.rating >= 30 ? 'VIP' : 'Ordinary User'}</td>
               </tr>
               <tr>
                 <td>Groups</td>

@@ -5,6 +5,7 @@ import { LetterAvatars } from './Groups/LetterAvatars';
 import {Link} from 'react-router-dom';
 import axios from 'axios';
 import Ratings from './Ratings';
+import NumericInput from 'react-numeric-input';
 class Cards extends Component {
     constructor(props){
         super(props);
@@ -16,6 +17,7 @@ class Cards extends Component {
 
         }
         this.handleOnClick = this.handleOnClick.bind(this);
+        this.handleOnClick2 = this.handleOnClick2.bind(this);
     }
     handleOnClick(e){
         e.preventDefault();
@@ -26,6 +28,18 @@ class Cards extends Component {
         }).then((r)=> {
             console.log(r)
         })                
+    }
+    handleOnClick2(e){
+        e.preventDefault();
+        console.log(e.target.value)
+        
+        axios.post('/users',{
+            rating: this.props.rating + e.target.value,
+            user_id: this.props.id
+        }).then((r)=> {
+            console.log(r)
+        })      
+                  
     }
     componentDidMount(){
         this.setState({
@@ -58,7 +72,9 @@ class Cards extends Component {
                         {this.props.invite == "yes" ?
                         <Link onClick={this.handleOnClick}>
                                                        <br/> Invite
-                        </Link> : ""}                   
+                        </Link> : ""}
+                        {this.props.su == true ? <h6>Change Rating</h6>: ""}
+                        {this.props.su == true ? <NumericInput min={-100} max={100} value={0} onClick={this.handleOnClick2}/>: ""}                    
                         </Card.Footer>
                     </Card>
                 </div>
