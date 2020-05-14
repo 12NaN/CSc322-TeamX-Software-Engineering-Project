@@ -115,19 +115,24 @@ handleSubmit = e => {
     let optionTemplate = this.state.user_list.map(v => (
       <option value={v.id}>{v.username}</option>
     ));
+    if(this.state.vote_type==='3'){
+      optionTemplate = <option value={this.state.issuer_id}>This Group</option>
+    }
     return (
       <div>
       <NotificationContainer/>
       <form onSubmit={this.handleSubmit}>
-        <h1>Vote to Issue a Warning/Compliment/Kick</h1>
-
+        <h1>Vote to Issue a Warning/Compliment/Kick or Group Closure</h1>
+        <br></br>
+        <h4>If you select Group Closure, select your own username below.</h4>
         <label> Vote Type:
           <div>
            <select class='custom-select' type='input' value={this.state.vote_type} onChange={this.handleChange2}>
-                  <option value="-1">Select Type</option>
+                  <option value="">Select Type</option>
                   <option value="0">Compliment</option>
                   <option value="1">Warn</option>
                   <option value="2">Kick</option>
+                  <option value="3">Group Closure</option>
            </select>
           </div>
         </label>
