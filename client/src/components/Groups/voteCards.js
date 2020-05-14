@@ -36,7 +36,7 @@ class VoteCards extends Component {
 
     }
     render() {
-        let  bar = this.state.yes_votes;
+        let bar = this.state.yes_votes;
         let bar2 = this.state.no_votes;
         let barFull = bar+bar2;
         let barA = (bar/barFull)*100;
@@ -44,16 +44,16 @@ class VoteCards extends Component {
         let name = '';
         let u_name = '';
         if(this.state.vote_type === 0){
-            name = 'Compliment'
+            name = 'Compliment for'
         }
         if(this.state.vote_type === 1){
-            name = 'Warning'
+            name = 'Warning for'
         }
         if(this.state.vote_type === 2){
-            name = 'Kick'
+            name = 'Kick for'
         }
         if(this.state.vote_type === 3){
-            name = 'GroupClosure'
+            name = 'Group Closure suggested by'
         }
 
         for(var i=0;i<this.props.members.length;i++){
@@ -68,7 +68,7 @@ class VoteCards extends Component {
                 <div>
                     <Card>
                         <Card.Body>
-                        <Card.Title>{name} for {u_name}</Card.Title>
+                        <Card.Title>{name} {u_name}</Card.Title>
                         <Card.Text>{this.state.votename}</Card.Text>
                         <br></br>
                         <Card.Text>Yes: {this.state.yes_votes}</Card.Text>
@@ -87,4 +87,4 @@ class VoteCards extends Component {
     }
 }
 
-export default VoteCards;;
+export default VoteCards;
