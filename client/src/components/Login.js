@@ -28,18 +28,16 @@ class Login extends Component {
     }
 
     login(user).then(res => {
-      if(typeof res == 'string' || res instanceof String){
-        if(res == "LOGIN_ERROR"){
-          NotificationManager.warning("Incorrect user credentials.", "Login Error");
-        }
-        else if(res == "LOGIN_BANNED"){
-          NotificationManager.warning("Your account has been blacklisted.", "Black listed");
-        }
+      if(res == "LOGIN_ERROR"){
+        NotificationManager.warning("Incorrect user credentials.", "Login Error");
+      }
+      else if(res == "LOGIN_BANNED"){
+        NotificationManager.warning("Your account has been blacklisted.", "Black listed");
       }
       else if (!res.error) {
         this.props.history.push(`/profile`)
       }
-    })
+  })
   }
 
   render() {
