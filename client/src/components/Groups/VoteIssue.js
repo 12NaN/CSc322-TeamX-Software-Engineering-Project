@@ -122,7 +122,7 @@ class VoteIssue extends Component {
               type = 'Kick'
             }
             if(this.state.vote_type === 3){
-                type = 'GroupClosure'
+                type = 'Group Closure'
              }
 
   if(voted === true){
