@@ -730,6 +730,10 @@ def posts(group_id):
     name = request.json['user_name']
     group = request.json['group_id']
 
+    if(in_blacklist(user) == True):
+        print("USER IS IN BLACK LIST NOW")
+
+
     date_posted = datetime.strptime(
         request.json['date_posted'], "%a, %d %b %Y %H:%M:%S %Z")
     print(date_posted)
@@ -1023,7 +1027,15 @@ def account():
 
 
 # ---------------------------- SUPPLEMENTARY FUNCTIONS FOR ACCOUNT RETRIEVAL-------------------------
-
+def in_blacklist(user_id):
+    user_data = User.query.filter_by(id=user_id).first()  # Might need exception handling
+    print(user_data.user_name)
+    if (user_data.rating < 0):
+        print("IS GETTING BLACKLISTED")
+        return True
+    else:
+        print("IS NOT BLACKLISTED")
+        return False
 
 def pointDeduction(user_name, guilty_words):
     if len(guilty_words) == 0 or "".join(guilty_words).isspace():
