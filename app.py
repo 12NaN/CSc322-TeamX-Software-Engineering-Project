@@ -927,7 +927,7 @@ def pollvote(group_id, poll_id):
 def createissues(group_id):
     placeholder = group_id
     users = UserSchema()
-    members = User.query.join(GroupMembers, User.id == GroupMembers.user_id)
+    members = User.query.join(GroupMembers, User.id == GroupMembers.user_id).filter_by(group_id = placeholder)
     u = UserSchema(many=True)
     output1 = u.dump(members)
     print(output1)
@@ -958,7 +958,7 @@ def issuedvote(group_id):
     for i in request.json['user_list']:
         users_id = i['id']
         print(users_id)
-        if(users_id != issuer):
+        if users_id != issuer and users_id != subject:
             new_voter = Voters(vote_id=cur_vote, user_id=users_id, status=0)
             db.session.add(new_voter)
             db.session.commit()
@@ -1009,6 +1009,8 @@ def pushvote(group_id, vote_id):
     voters = VotersSchema()
     data = request.json['NewVoteData']
     voter = request.json['user_id_access']
+    subject_id = request.json['subject_id']
+    vote_type = request.json['vote_type']
     casted_vote = VoteHandle.query.filter_by(vote_id=placeholder)
     v1 = VoteHandleSchema(many=True)
     inputinto = v1.dump(casted_vote)
@@ -1025,9 +1027,26 @@ def pushvote(group_id, vote_id):
         vote_id=placeholder, user_id=voter).first()
     update3.status = int(1)
     db.session.commit()
+    completed = True
+    check = VotersSchema(many=True)
+    checker = Voters.query.filter_by(
+        vote_id=placeholder)
+    allvoters = check.dump(checker)
+    for i in allvoters:
+        if(i['status']==0):
+            completed = False
+    if(completed == True):
+        sub = UserSchema(many=True)
+        subject_person = User.query.filter_by(id = subject_id)
+        sub_input = sub.dump(subject_person)
+        sender_id = subject_id
+        recipient_id = 1
+        notification = Notification(
+            id=vote_type+5, group_id=p2, sender_id=sender_id, recipient_id=recipient_id, body=sub_input[0]['user_name']+' <= '+inputinto[0]['desc'])
+        db.session.add(notification)
+        db.session.commit()
     results = voters.dump(Voters.query.filter_by(vote_id=placeholder))
     return jsonify({'result': results})
-
 
 # This route redirects the account function to be used at the profile page
 
