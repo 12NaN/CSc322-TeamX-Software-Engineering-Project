@@ -51,7 +51,9 @@ class VoteIssue extends Component {
     })
     axios.post(`/projects/${this.state.group_id}/votefor/issue/${this.props.match.params['id2']}`, {
       NewVoteData: this.state.newdata,
-      user_id_access: this.state.user_id_access
+      user_id_access: this.state.user_id_access,
+      subject_id: this.state.subject_id,
+      vote_type: this.state.vote_type
     })
     .then((r) =>{
       console.log(r)
@@ -153,7 +155,7 @@ class VoteIssue extends Component {
         <h4>User: {username}</h4>
           <br></br>
             <NotificationContainer/>
-            <Poll  question={"Description/Reason: "+this.state.nameVote} answers={this.state.newdata} onVote={this.handleVote} customStyles= {this.state.voteStyles} />
+            <Poll  question={"Description/Reason: "+this.state.nameVote} answers={this.state.newdata} onVote={this.handleVote} customStyles= {this.state.voteStyles} noStorage />
                  <Link style={{"backgroundColor": "purple", "variant":"outline-dark"}} className='btn btn-dark btn-block'to={{pathname: '/projects/' + this.state.group_id}}>
                             Return
                     </Link>  
