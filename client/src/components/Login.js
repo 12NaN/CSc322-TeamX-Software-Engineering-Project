@@ -1,5 +1,7 @@
 import React, { Component } from 'react'
 import { login } from './UserFunctions'
+import { NotificationContainer, NotificationManager } from 'react-notifications';
+import 'react-notifications/lib/notifications.css';
 
 class Login extends Component {
   constructor() {
@@ -26,7 +28,15 @@ class Login extends Component {
     }
 
     login(user).then(res => {
-      if (!res.error) {
+      if(typeof res == 'string' || res instanceof String){
+        if(res == "LOGIN_ERROR"){
+          NotificationManager.warning("Incorrect user credentials.", "Login Error");
+        }
+        else if(res == "LOGIN_BANNED"){
+          NotificationManager.warning("Your account has been blacklisted.", "Black listed");
+        }
+      }
+      else if (!res.error) {
         this.props.history.push(`/profile`)
       }
     })
@@ -35,6 +45,7 @@ class Login extends Component {
   render() {
     return (
       <div className="container">
+        <NotificationContainer/>
         <div className="row">
           <div className="col-md-6 mt-5 mx-auto">
             <form noValidate onSubmit={this.onSubmit}>

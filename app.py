@@ -15,6 +15,7 @@ from pymysql import NULL
 from flask_mail import Mail, Message
 import os.path
 from os import path
+import smtplib
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'mysecret'
@@ -272,7 +273,8 @@ class Todo(db.Model):
 
 class UserSchema(ma.SQLAlchemySchema):
     class Meta:
-        fields = ('id', 'user_name', 'email', 'interest', 'rating', 'user_type')
+        fields = ('id', 'user_name', 'email',
+                  'interest', 'rating', 'user_type')
 
 
 class GroupSchema(ma.SQLAlchemySchema):
@@ -551,22 +553,26 @@ def approve():
     id = request.json['id']
     sender_id = 1
     recipient_id = id
+    notif_type = request.json['type']
     body = "You have been approved"
-
-    notification = Notification(
-        id=4, group_id=NULL, sender_id=sender_id, recipient_id=recipient_id, body=body)
-    db.session.add(notification)
-    db.session.commit()
-
-    import smtplib
-    conn = smtplib.SMTP('smtp.gmail.com', 587)
-    type(conn)
-    conn.ehlo()
-    conn.starttls()
-    conn.login('bryarebryare@gmail.com', 'lrdyjaqhafhluolu')
-    conn.sendmail('bryarebryare@gmail.com',
-                  'bareval001@citymail.cuny.edu', 'Subject:')
-    conn.quit()
+    if(notif_type >= 0):
+        notification = Notification(
+            id=notif_type, group_id=NULL, sender_id=sender_id, recipient_id=recipient_id, body=body)
+        db.session.add(notification)
+        db.session.commit()
+        if(notif_type >= 0):
+            conn = smtplib.SMTP('smtp.gmail.com', 587)
+            type(conn)
+            conn.ehlo()
+            conn.starttls()
+            conn.login('bryarebryare@gmail.com', 'lrdyjaqhafhluolu')
+            conn.sendmail('bryarebryare@gmail.com',
+                          'bareval001@citymail.cuny.edu', 'Subject:')
+            conn.quit()
+    else:
+        body = "DENIED. FILE AN APPEAL."
+        notification = Notification(
+            id=notif_type, group_id=NULL, sender_id=sender_id, recipient_id=recipient_id, body=body)
 
     result = {
         'id': id,
@@ -687,18 +693,19 @@ def login():
     password = request.get_json()['password']
 
     result = ""
-
+    members = User.query.join(GroupMembers, User.id == GroupMembers.user_id)
+   #notifications = User.query.filter_by(Notification, User.id == Notification.recipient_id )
     user = User.query.filter_by(email=str(email)).first()
     banned_emails = getBlackListEmails(email)
     if (email in banned_emails):
         print(email, " IS BANNED! --py")
-        return jsonify({"error": "This email is banned!"})
+        return jsonify({"login_banned": True})
     if user and bcrypt.check_password_hash(user.password, password):
         access_token = create_access_token(identity={'id': user.id, 'user_name': user.user_name,
                                                      'first_name': user.first_name, 'last_name': user.last_name, 'email': user.email, 'rating': user.rating, 'id': user.id})
         result = access_token
     else:
-        result = jsonify({"error": "Invalid username and password"})
+        result = jsonify({"login_error": True})
 
     return result
 
@@ -714,7 +721,7 @@ def removeTodo(group_id, item_id):
     #       {User.rating: User.rating + reduce_points})
     #removeTodo = Todo.query.filter(group_id == group_id).filter(id==item_id).delete(synchronize_session=False)
     #removeTodo = db.session.query(Todo).filter(group_id == group_id).filter(id==item_id)
-    Todo.query.filter_by(group_id = group_id, id=item_id).delete()
+    Todo.query.filter_by(group_id=group_id, id=item_id).delete()
     db.session.commit()
     todo = TodoSchema(many=True)
     result = todo.dump(Todo.query.filter(group_id == group_id).all())
@@ -726,7 +733,6 @@ def removeTodo(group_id, item_id):
 
 @app.route('/projects/<group_id>', methods=['POST'])
 def posts(group_id):
-  #  id = request.json['id']
     post = PostSchema()
     taboo = open('taboo.txt', 'r')
     title = request.json['title']
@@ -734,10 +740,9 @@ def posts(group_id):
     user = request.json['user_id']
     name = request.json['user_name']
     group = request.json['group_id']
-
     date_posted = datetime.strptime(
         request.json['date_posted'], "%a, %d %b %Y %H:%M:%S %Z")
-    print(date_posted)
+
     reduce_points = 0  # Amount of points to reduce if taboo word is found
     taboo_found = []
     for line in taboo:
@@ -760,8 +765,6 @@ def posts(group_id):
         updateRep(user, reduce_points)
         violation = True
 
-#    date = request.json['date_posted']
-    # Adding the new post along with the time stamp
     new_post = Post(title=title, date_posted=date_posted,
                     content=content, user_id=user, user_name=name, group_id=group)
     db.session.add(new_post)
@@ -770,6 +773,13 @@ def posts(group_id):
     print("Post_Added")
     result = post.dump(Post.query.filter_by(group_id=group_id))
     print(result)
+
+
+    if(in_blacklist(user) == True):
+        return jsonify({'removetoken':True})
+
+
+
     return jsonify({'result': result, "violation": violation, "reduced": reduce_points})
 
 
@@ -786,7 +796,7 @@ def addTodo(group_id):
                     user_id=user_id, status=status, group_id=group_id)
     db.session.add(new_todo)
     db.session.commit()
-    new_todo = Todo.query.filter(group_id==group_id)
+    new_todo = Todo.query.filter(group_id == group_id)
     print("New Todo added")
     result = todo.dump(new_todo)
     return jsonify({'result': result})
@@ -811,7 +821,7 @@ def updateTodo(group_id, item_id):
     }, synchronize_session='fetch')
     print("Todo Updated")
     db.session.commit()
-    new_todo = Todo.query.filter(group_id== group_id).filter(id == item_id)
+    new_todo = Todo.query.filter(group_id == group_id).filter(id == item_id)
     result = todo.dump(new_todo)
     return jsonify({'result': result})
 
@@ -916,7 +926,7 @@ def pollvote(group_id, poll_id):
 def createissues(group_id):
     placeholder = group_id
     users = UserSchema()
-    members = User.query.join(GroupMembers, User.id == GroupMembers.user_id)
+    members = User.query.join(GroupMembers, User.id == GroupMembers.user_id).filter_by(group_id = placeholder)
     u = UserSchema(many=True)
     output1 = u.dump(members)
     print(output1)
@@ -1028,7 +1038,20 @@ def account():
 
 
 # ---------------------------- SUPPLEMENTARY FUNCTIONS FOR ACCOUNT RETRIEVAL-------------------------
-
+def in_blacklist(user_id):
+    user_data = User.query.filter_by(id=user_id).first()  # Might need exception handling
+    
+    print(user_data.user_name)
+    if (user_data.rating < 0):
+        new_blacklist = BlackList(user_id=user_data.id, user_name=user_data.user_name)
+        db.session.add(new_blacklist)
+        db.session.commit()
+        find_new_blacklist = BlackList.query.filter_by(user_id=user_data.id).first()
+        print("USER HAS BEEN BLACKLISTED")
+        return True
+    else:
+        print("IS NOT BLACKLISTED")
+        return False
 
 def pointDeduction(user_name, guilty_words):
     if len(guilty_words) == 0 or "".join(guilty_words).isspace():

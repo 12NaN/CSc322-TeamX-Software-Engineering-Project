@@ -14,9 +14,11 @@ class ApproveCard extends Component {
             id: 0,
             rating: 0,
             email: '',
+            type: 0,
             dataFetched: false
         }
         this.onApprove = this.onApprove.bind(this)
+        this.onDeny = this.onDeny.bind(this)
     }
     componentDidMount() {
         this.setState({
@@ -24,6 +26,7 @@ class ApproveCard extends Component {
             rating: this.props.rating,
             id: this.props.id,
             email: this.props.email,
+            type: this.props.type,
         })
     }
 
@@ -33,6 +36,24 @@ class ApproveCard extends Component {
             sender_id: 1,
             body: "Approved",
             email: this.state.email,
+            type: 4,
+        })
+            .then((r) => {
+                console.log(r)
+            })
+        this.setState(state => ({
+            isDisabled: true,
+            disabled: true,
+        }));
+    }
+
+    onDeny() {
+        axios.post('/notifications', {
+            id: this.state.id,
+            sender_id: 1,
+            body: "Denied",
+            email: this.state.email,
+            type: -1,
 
         })
             .then((r) => {
@@ -44,12 +65,13 @@ class ApproveCard extends Component {
         }));
     }
 
+
     render() {
 
         let approve;
         let deny;
-        approve = <button onClick={this.onApprove} disabled={this.state.isDisabled} style={{ float: "right" }}>Approve</button>
-        deny = <button style={{ float: "right" }}>Decline</button>
+        approve = <button onClick={this.onApprove} disabled={this.state.isDisabled} style={{ float: "right" }} style={{"backgroundColor": "purple"}} className="btn btn-dark">Approve</button>
+        deny = <button onClick={this.onDeny} disabled={this.state.isDisabled} style={{ float: "right" }} style={{"backgroundColor": "purple"}} className="btn btn-dark">Decline</button> 
         console.log(this.state.email);
         return (
             <div>
@@ -72,12 +94,14 @@ class ApproveCard extends Component {
                     </Card.Body>
 
                     <Card.Footer>
-                        <Link to={"/users/" + this.props.id}>
+                        <Link style={{"backgroundColor": "purple"}} className="btn btn-dark" to={"/users/" + this.props.id}>
                             View Page
 
                             
                         </Link>
+                        &emsp;
                         {approve}
+                        &emsp;
                             {deny}
                     </Card.Footer>
                 </Card>
