@@ -498,6 +498,18 @@ def createMem():
     result = mem.dump(GroupMembers.query.filter_by(group_id=group))
     return jsonify({"result": result})
 
+@app.route('/users', methods=['POST'])
+def rating():
+
+    users = User.query.filter_by(id = request.json['user_id']).update({'rating': request.json['rating']})
+    db.session.commit()
+    user = UserSchema(many=True)
+    print(request.json['user_id'])
+    output = user.dump(User.query.filter(id == request.json['user_id']))
+    result = {
+        'Users': output
+    }
+    return jsonify(result)
 # This route displays users on the users page.
 
 
@@ -687,13 +699,13 @@ def login():
     banned_emails = getBlackListEmails(email)
     if (email in banned_emails):
         print(email, " IS BANNED! --py")
-        return jsonify({"error": "This email is banned!"})
+        return jsonify({"login_banned": True})
     if user and bcrypt.check_password_hash(user.password, password):
         access_token = create_access_token(identity={'id': user.id, 'user_name': user.user_name,
                                                      'first_name': user.first_name, 'last_name': user.last_name, 'email': user.email, 'rating': user.rating, 'id': user.id})
         result = access_token
     else:
-        result = jsonify({"error": "Invalid username and password"})
+        result = jsonify({"login_error": True})
 
     return result
 

@@ -28,8 +28,18 @@ export const login = user => {
       password: user.password
     })
     .then(response => {
-      localStorage.setItem('usertoken', response.data)
-      return response.data
+      if(typeof response.data == 'string' || response.data instanceof String) {
+        localStorage.setItem('usertoken', response.data)
+        return response.data
+      }
+      else if (response.data.login_error == true) {
+        console.log("LOGIN_ERROR")
+        return "LOGIN_ERROR";
+      }
+      else if (response.data.login_banned == true) {
+        console.log("LOGIN_BANNED")
+        return "LOGIN_BANNED";
+      }
     })
     .catch(err => {
       console.log(err)

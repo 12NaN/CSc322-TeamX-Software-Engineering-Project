@@ -38,7 +38,6 @@ class Forms extends Component {
             })
             .then((r) =>{
                 if (r.data.violation == true){
-                    console.log("YOU SAID SOMETHING BAD!")
                     NotificationManager.warning("Penalty: "+ r.data.reduced, "WARNING: TABOO WORD USED");
                 }
                 else if(r.data.removetoken == true){
