@@ -401,7 +401,7 @@ def register():
 
     # The user_name is not black listed and is added to the database
     user = User(user_name=user_name, first_name=first_name, last_name=last_name, email=email,
-                password="password", interest=interest, references=references, user_type=user_type, rating=rating)  # , created=created)
+                password=password, interest=interest, references=references, user_type=user_type, rating=rating)  # , created=created)
     db.session.add(user)
     db.session.commit()
 
