@@ -30,6 +30,7 @@ class NotificationCards extends Component {
             recipient_id: this.props.recipient_id,
             body: this.props.body,
             user_id: decoded.identity.id,
+            body: this.props.body,
 
         })
     }
@@ -72,6 +73,7 @@ class NotificationCards extends Component {
 
         const type = this.state.id;
         let type_name;
+        let body;
         if (type == 1) {
             type_name = "Group Invite"
         }
@@ -80,6 +82,22 @@ class NotificationCards extends Component {
         }
         if (type == 3) {
             type_name = "Register Visitor"
+        }
+        if (type == 4) {
+            type_name = "Compliment"
+            body = "You have been complimented by a fellow user."
+        }
+        if (type == 5) {
+            type_name = "Warning"
+            body = "You have been warned."
+        }
+        if (type == 6) {
+            type_name = "Kicked out of Group"
+            body = "You have been kicked out of the group."
+        }
+        if (type == 7) {
+            type_name = "Group Closed"
+            body = "Your group has been closed."
         }
         const user = this.state.user_id;
         const rec = this.state.recipient_id;
