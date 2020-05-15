@@ -560,15 +560,6 @@ def approve():
             id=notif_type, group_id=NULL, sender_id=sender_id, recipient_id=recipient_id, body=body)
         db.session.add(notification)
         db.session.commit()
-        if(notif_type >= 0):
-            conn = smtplib.SMTP('smtp.gmail.com', 587)
-            type(conn)
-            conn.ehlo()
-            conn.starttls()
-            conn.login('bryarebryare@gmail.com', 'lrdyjaqhafhluolu')
-            conn.sendmail('bryarebryare@gmail.com',
-                          email, 'Subject:', "PASSWORD")
-            conn.quit()
     else:
         body = "DENIED. FILE AN APPEAL."
         notification = Notification(
