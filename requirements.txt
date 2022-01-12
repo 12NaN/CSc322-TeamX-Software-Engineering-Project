@@ -15,7 +15,7 @@ kiwisolver==1.0.1
 marshmallow==3.5.2
 marshmallow-sqlalchemy==0.23.0
 Pillow==2.9.0
-pipenv==2018.11.26
+pipenv==2022.1.8
 pluggy==0.6.0
 praw==6.0.0
 prawcore==1.0.0
