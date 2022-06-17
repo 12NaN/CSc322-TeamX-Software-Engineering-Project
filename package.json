@@ -26,7 +26,7 @@
   "homepage": "https://github.com/12NaN/CSc322-TeamX-Software-Engineering-Project#readme",
   "devDependencies": {
     "concurrently": "^5.1.0",
-    "electron": "^8.1.1"
+    "electron": "^15.5.5"
   },
   "dependencies": {
     "react": "^16.13.1",
