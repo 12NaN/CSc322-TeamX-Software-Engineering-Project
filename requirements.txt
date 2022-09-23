@@ -19,7 +19,7 @@ pipenv==2018.11.26
 pluggy==0.6.0
 praw==6.0.0
 prawcore==1.0.0
-protobuf==3.9.2
+protobuf==3.18.3
 pusher==3.0.0
 py==1.5.4
 pyasn1==0.4.7
